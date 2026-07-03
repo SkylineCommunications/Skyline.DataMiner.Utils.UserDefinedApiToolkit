@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<PlatformTarget>AnyCpu</PlatformTarget>
+		<LangVersion>latest</LangVersion>
+		<OutputType>Library</OutputType>
+		<AssemblyTitle>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build</AssemblyTitle>
+		<Product>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build</Product>
+		<AssemblyName>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build</AssemblyName>
+		<RootNamespace>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build</RootNamespace>
+
+		<PackageId>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build</PackageId>
+		<PackageTags>Skyline;DataMiner</PackageTags>
+		<PackageProjectUrl>https://skyline.be</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon>Icon.png</PackageIcon>
+		<PackageOutputPath>$(NugetDir)</PackageOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+
+		<Authors>SkylineCommunications</Authors>
+		<Company>Skyline Communications</Company>
+		<Description>A framework for building REST APIs in DataMiner using attribute-based controllers with automatic OpenAPI specification generation.</Description>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiToolkit</RepositoryUrl>
+		<Deterministic>false</Deterministic>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- The compiled task assembly is bundled into the Skyline.DataMiner.Utils.UserDefinedApiToolkit
+		     NuGet package (under tasks/netstandard2.0/) so it can run standalone via a <UsingTask>
+		     without relying on the consumer's NuGet cache. CopyLocalLockFileAssemblies ensures all of
+		     its (non-MSBuild) package dependencies, such as Microsoft.OpenApi, are copied next to it. -->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="$(RootDir)\LICENSE.txt" Pack="true" PackagePath="" />
+		<None Include="nuget\Icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" ExcludeAssets="Runtime" />
+		<PackageReference Include="Microsoft.OpenApi" PrivateAssets="all" />
+		<PackageReference Include="System.Reflection.MetadataLoadContext" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Allows the test project to unit test the internal OpenAPI generation building blocks
+		     (ComponentFactory, ComponentRegistry, TypeHelper, OperationProvider, ControllerUnit, ...)
+		     directly, in addition to the public OpenApiTask end-to-end tests. -->
+		<InternalsVisibleTo Include="UserDefinedApiToolkit.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>

@@ -1,0 +1,25 @@
+<Project>
+	<PropertyGroup>
+		<RootDir>$(MSBuildThisFileDirectory)</RootDir>
+		<ArtifactDir>$(RootDir)Artifacts</ArtifactDir>
+		<NugetDir>$(ArtifactDir)\nuget</NugetDir>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="$(RootDir)\.editorconfig">
+			<Link>Properties\.editorconfig</Link>
+		</Content>
+		<AdditionalFiles Include="$(RootDir)\allowed_words.dic">
+			<Link>Properties\allowed_words.dic</Link>
+		</AdditionalFiles>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="StyleCop.Analyzers">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<Import Project="$(RootDir)\Directory.Build.props.user" Condition="Exists('$(RootDir)\Directory.Build.props.user')" />
+</Project>

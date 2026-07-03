@@ -1,0 +1,95 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<PlatformTarget>AnyCpu</PlatformTarget>
+		<LangVersion>latest</LangVersion>
+		<OutputType>Library</OutputType>
+		<AssemblyTitle>Skyline.DataMiner.Utils.UserDefinedApiToolkit</AssemblyTitle>
+		<Product>Skyline.DataMiner.Utils.UserDefinedApiToolkit</Product>
+		<AssemblyName>Skyline.DataMiner.Utils.UserDefinedApiToolkit</AssemblyName>
+		<RootNamespace>Skyline.DataMiner.Utils.UserDefinedApiToolkit</RootNamespace>
+
+		<PackageId>Skyline.DataMiner.Utils.UserDefinedApiToolkit</PackageId>
+		<PackageTags>Skyline;DataMiner</PackageTags>
+		<PackageProjectUrl>https://skyline.be</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon>Icon.png</PackageIcon>
+		<PackageOutputPath>$(NugetDir)</PackageOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+		<Authors>SkylineCommunications</Authors>
+		<Company>Skyline Communications</Company>
+		<Description>A framework for building REST APIs in DataMiner using attribute-based controllers with automatic OpenAPI specification generation.</Description>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiToolkit</RepositoryUrl>
+		<Deterministic>false</Deterministic>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="$(RootDir)\LICENSE.txt" Pack="true" PackagePath="" />
+		<None Include="nuget\Icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Build-only reference: ensures UserDefinedApiToolkit.Build is compiled before this project
+		     is packed, without adding it (or its dependencies) as a compile/runtime reference of this
+		     library. Its output is bundled into this package's "tasks/" folder below instead of being
+		     shipped as a separate NuGet package. -->
+		<ProjectReference Include="..\UserDefinedApiToolkit.Build\UserDefinedApiToolkit.Build.csproj"
+						  ReferenceOutputAssembly="false"
+						  PrivateAssets="all"
+						  SkipGetTargetFrameworkProperties="true"
+						  Private="false" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- MSBuild .targets file that wires up the OpenApiTask when a consumer sets <GenerateOpenApi>True</GenerateOpenApi>. -->
+		<None Include="build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets"
+			  Pack="true"
+			  PackagePath="build\"
+			  Visible="true" />
+	</ItemGroup>
+
+	<!-- Item wildcards below must be evaluated at target-execution time (not project-load time),
+	     since UserDefinedApiToolkit.Build's output does not exist yet until its Build target has
+	     run. _GetPackageFiles runs after Build (via the ProjectReference above), so the OpenApiTask
+	     assembly and its runtime dependencies are guaranteed to be present on disk by then. -->
+	<Target Name="_AddOpenApiTaskFilesToPackage" BeforeTargets="_GetPackageFiles">
+		<ItemGroup>
+			<None Include="$(RootDir)\UserDefinedApiToolkit.Build\bin\$(Configuration)\netstandard2.0\*.dll"
+				  Pack="true"
+				  PackagePath="tasks\netstandard2.0\"
+				  Visible="false" />
+			<None Include="$(RootDir)\UserDefinedApiToolkit.Build\bin\$(Configuration)\netstandard2.0\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.deps.json"
+				  Pack="true"
+				  PackagePath="tasks\netstandard2.0\"
+				  Visible="false" />
+		</ItemGroup>
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+		<PackageReference Include="Microsoft.Extensions.Logging" />
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="Skyline.DataMiner.Dev.Automation" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<Target Name="CopyNuGetPackage" AfterTargets="Pack" Condition="'$(NuGetStorePath)' != '' and '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<Copy SourceFiles="$(PackageOutputPath)\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(NuGetStorePath)\$(PackageId)" />
+	</Target>
+</Project>

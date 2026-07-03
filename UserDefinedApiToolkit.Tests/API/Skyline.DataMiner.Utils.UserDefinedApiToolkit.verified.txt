@@ -1,0 +1,239 @@
+﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiTo" +
+    "olkit")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName=".NET Framework 4.8")]
+namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
+{
+    public class ApiContext
+    {
+        public ApiContext() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter DefaultInputConverter { get; }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter DefaultOutputConverter { get; }
+        public System.Collections.Generic.IReadOnlyList<Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter> InputConverters { get; }
+        public System.Collections.Generic.IReadOnlyList<Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter> OutputConverters { get; }
+        public Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput Request { get; }
+        public Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput Response { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+    public sealed class ApiControllerAttribute : System.Attribute
+    {
+        public ApiControllerAttribute() { }
+    }
+    public sealed class ApiResult<TSuccess> : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult
+    {
+        public void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess> op_Implicit(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<TSuccess> result) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess> op_Implicit(Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult result) { }
+    }
+    public sealed class ApiResult<TSuccess, TError> : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult
+    {
+        public ApiResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult inner) { }
+        public void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError> op_Implicit(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<TError> result) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError> op_Implicit(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<TSuccess> result) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError> op_Implicit(Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult result) { }
+    }
+    public static class BuilderExtensions
+    {
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder AddControllers(this Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder builder) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder AddControllersFromAssembly(this Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder builder, System.Reflection.Assembly assembly) { }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false)]
+    public class ConsumesAttribute : System.Attribute
+    {
+        public ConsumesAttribute(string contentType, params string[] additionalContentTypes) { }
+        public System.Collections.Generic.IReadOnlyList<string> ContentTypes { get; }
+    }
+    public abstract class ControllerBase
+    {
+        protected ControllerBase() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext ApiContext { get; }
+        public virtual Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter DefaultInputConverter { get; }
+        public virtual Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter DefaultOutputConverter { get; }
+        public Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput Request { get; }
+        public Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput Response { get; }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult BadRequest() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> BadRequest<T>(T error) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult Conflict() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> Conflict<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult Created() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> Created<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult Forbid() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> Forbid<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult InternalServerError() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> InternalServerError<T>(T error) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult NoContent() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult NotFound() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> NotFound<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult Ok() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> Ok<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult ServiceUnavailable() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> ServiceUnavailable<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult StatusCode(int statusCode) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> StatusCode<T>(int statusCode, T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult Unauthorized() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> Unauthorized<T>(T value) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult UnprocessableEntity() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T> UnprocessableEntity<T>(T error) { }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false, Inherited=true)]
+    public sealed class FromBodyAttribute : System.Attribute
+    {
+        public FromBodyAttribute() { }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false, Inherited=true)]
+    public sealed class FromQueryAttribute : System.Attribute
+    {
+        public FromQueryAttribute() { }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public sealed class HttpDeleteAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
+    {
+        public HttpDeleteAttribute() { }
+        public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public sealed class HttpGetAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
+    {
+        public HttpGetAttribute() { }
+        public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public abstract class HttpMethodAttribute : System.Attribute
+    {
+        protected HttpMethodAttribute() { }
+        public abstract Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public sealed class HttpPostAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
+    {
+        public HttpPostAttribute() { }
+        public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public sealed class HttpPutAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
+    {
+        public HttpPutAttribute() { }
+        public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+    }
+    public interface IAccessor<T>
+    {
+        T Value { get; }
+        void SetValue(T value);
+    }
+    public interface IApiResult
+    {
+        void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context);
+    }
+    public interface IInputConverter
+    {
+        string InputMediaType { get; }
+        bool CanConvertInput(System.Type type);
+        object? ConvertInput(string input, System.Type type);
+    }
+    public interface IOutputConverter
+    {
+        string OutputMediaType { get; }
+        bool CanConvertOutput(System.Type type);
+        string ConvertOutput(object? output, System.Type type);
+    }
+    public interface IUserDefinedApi
+    {
+        Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput Run(Skyline.DataMiner.Automation.IEngine engine, Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput apiTriggerInput);
+    }
+    public class NewtonsoftConverter : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter, Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter
+    {
+        public NewtonsoftConverter() { }
+        public string InputMediaType { get; }
+        public string OutputMediaType { get; }
+        public bool CanConvertInput(System.Type type) { }
+        public bool CanConvertOutput(System.Type type) { }
+        public object? ConvertInput(string input, System.Type type) { }
+        public string ConvertOutput(object? output, System.Type type) { }
+    }
+    public class ObjectResult<T> : Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult, Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult
+    {
+        public ObjectResult(int statusCode, T value) { }
+        public T Value { get; }
+        public override void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false)]
+    public class ProducesAttribute : System.Attribute
+    {
+        public ProducesAttribute(string contentType, params string[] additionalContentTypes) { }
+        public System.Collections.Generic.IReadOnlyList<string> ContentTypes { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
+    public sealed class ProducesResponseTypeAttribute : System.Attribute
+    {
+        public ProducesResponseTypeAttribute(int statusCode) { }
+        public ProducesResponseTypeAttribute(System.Type responseType, int statusCode) { }
+        public System.Type? ResponseType { get; }
+        public int StatusCode { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+    public sealed class RouteAttribute : System.Attribute
+    {
+        public RouteAttribute(string template) { }
+        public string Template { get; }
+    }
+    public class StatusCodeResult : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult
+    {
+        public StatusCodeResult(int statusCode) { }
+        public int StatusCode { get; }
+        public virtual void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
+    }
+    public class StringConverter : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter, Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter
+    {
+        public StringConverter() { }
+        public string InputMediaType { get; }
+        public string OutputMediaType { get; }
+        public bool CanConvertInput(System.Type type) { }
+        public bool CanConvertOutput(System.Type type) { }
+        public object? ConvertInput(string input, System.Type type) { }
+        public string ConvertOutput(object? output, System.Type type) { }
+    }
+    public class UserDefinedApi : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IUserDefinedApi
+    {
+        public Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput Run(Skyline.DataMiner.Automation.IEngine engine, Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput apiTriggerInput) { }
+        public static Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder CreateBuilder() { }
+    }
+    public class UserDefinedApiBuilder
+    {
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder AddController(System.Type controllerType) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder AddController<TController>()
+            where TController : Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder AddInputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter converter) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder AddOutputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter converter) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.IUserDefinedApi Build() { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> configure) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder WithDefaultInputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter converter) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder WithDefaultOutputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter converter) { }
+    }
+}
+namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
+{
+    [System.Serializable]
+    public class AmbiguousRouteException : System.Exception
+    {
+        public AmbiguousRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
+        public AmbiguousRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string message) { }
+        public AmbiguousRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string message, System.Exception innerException) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext Context { get; }
+    }
+    [System.Serializable]
+    public class InvalidControllerException : System.Exception
+    {
+        public InvalidControllerException() { }
+        public InvalidControllerException(string message) { }
+        protected InvalidControllerException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
+        public InvalidControllerException(string message, System.Exception innerException) { }
+    }
+    [System.Serializable]
+    public class NoRouteException : System.Exception
+    {
+        public NoRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
+        public NoRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string message) { }
+        public NoRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string message, System.Exception innerException) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext Context { get; }
+    }
+}

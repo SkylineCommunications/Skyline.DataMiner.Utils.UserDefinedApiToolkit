@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<!--
+		Generates an OpenAPI 3.0 specification for User-Defined API projects that reference the
+		Skyline.DataMiner.Utils.UserDefinedApiToolkit NuGet package.
+
+		Enable it by adding the following to the consuming project's .csproj:
+
+			<PropertyGroup>
+			  <GenerateOpenApi>True</GenerateOpenApi>
+			  <OpenApiFormat>yaml</OpenApiFormat> (optional: "yaml", the default, or "json")
+			</PropertyGroup>
+
+		The task assembly (and its own runtime dependencies, e.g. Microsoft.OpenApi) are bundled
+		under "tasks/netstandard2.0/" of this package rather than published as a separate NuGet
+		package, so no additional package reference is required to use this feature.
+	-->
+
+	<UsingTask
+		TaskName="Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.OpenApiTask"
+		AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.dll" />
+
+	<PropertyGroup>
+		<OpenApiFormat Condition="'$(OpenApiFormat)' == ''">yaml</OpenApiFormat>
+	</PropertyGroup>
+
+	<Target Name="SkylineUserDefinedApiToolkit_GenerateOpenApi"
+			AfterTargets="Build"
+			Condition="'$(GenerateOpenApi)' == 'True'">
+
+		<!-- The XML documentation file (if enabled) is only used to enrich the generated
+		     specification with summaries/parameter descriptions; it is optional. -->
+		<PropertyGroup Condition="'$(GenerateDocumentationFile)' == 'true' or '$(GenerateDocumentationFile)' == 'True'">
+			<_UserDefinedApiOpenApiDocFile>$(TargetDir)$(TargetName).xml</_UserDefinedApiOpenApiDocFile>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<_UserDefinedApiOpenApiReference Include="@(ReferencePath)" />
+		</ItemGroup>
+
+		<OpenApiTask
+			TargetPath="$(TargetPath)"
+			OutputPath="$(OutDir)"
+			ProjectName="$(MSBuildProjectName)"
+			ProjectVersion="$(Version)"
+			References="@(_UserDefinedApiOpenApiReference)"
+			Format="$(OpenApiFormat)"
+			DocumentationFile="$(_UserDefinedApiOpenApiDocFile)" />
+	</Target>
+</Project>

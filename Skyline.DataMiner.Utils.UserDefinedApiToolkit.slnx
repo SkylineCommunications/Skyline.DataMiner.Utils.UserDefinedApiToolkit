@@ -1,0 +1,30 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="allowed_words.dic" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.props.user" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="LICENSE.txt" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/">
+    <File Path=".github/CODEOWNERS" />
+    <File Path=".github/dependabot.yml" />
+    <File Path=".github/PULL_REQUEST_TEMPLATE.md" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/ISSUE_TEMPLATE/">
+    <File Path=".github/ISSUE_TEMPLATE/bug_report.md" />
+    <File Path=".github/ISSUE_TEMPLATE/documentation.md" />
+    <File Path=".github/ISSUE_TEMPLATE/feature_request.md" />
+  </Folder>
+  <Folder Name="/Solution Items/.github/workflows/">
+    <File Path=".github/workflows/Internal.yml" />
+    <File Path=".github/workflows/Public.yml" />
+  </Folder>
+  <Project Path="UserDefinedApiToolkit.Build/UserDefinedApiToolkit.Build.csproj" Id="90c08f51-cb6c-4f7d-b146-6caf05fdfb09" />
+  <Project Path="UserDefinedApiToolkit.Tests/UserDefinedApiToolkit.Tests.csproj" Id="a1368df1-a512-4cdf-8c4f-f50b3c9e91b5" />
+  <Project Path="UserDefinedApiToolkit/UserDefinedApiToolkit.csproj" />
+</Solution>
