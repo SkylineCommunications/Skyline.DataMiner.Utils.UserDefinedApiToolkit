@@ -20,6 +20,11 @@ updates:
       - dependency-name: "Skyline.DataMiner.Files.*"
       - dependency-name: "Skyline.DataMiner.Dev.*"
       - dependency-name: "Skyline.DataMiner.Internal.*"
+
+      # Microsoft dependencies that are shipped with DataMiner
+      - dependency-name: "Microsoft.Extensions.DependencyInjection"
+      - dependency-name: "Microsoft.Extensions.Logging"
+
     groups:
       all-dependencies:
         patterns:

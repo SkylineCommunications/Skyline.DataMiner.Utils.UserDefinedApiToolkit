@@ -19,7 +19,7 @@
 		<PackageVersion Include="Microsoft.Build.Locator" Version="1.9.1" />
 		<!--Testing-->
 		<PackageVersion Include="MSTest" Version="4.2.3" />
-		<PackageVersion Include="FluentAssertions" Version="7.2.1" />
+		<PackageVersion Include="FluentAssertions" Version="7.2.2" />
 		<PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
 		<PackageVersion Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
 		<PackageVersion Include="Verify.MSTest" Version="31.14.0" />
