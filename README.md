@@ -1,257 +1,118 @@
-# Skyline.DataMiner.SDM.UserDefinedApi
-
-A framework for building User-Defined APIs in DataMiner, providing a controller-based approach similar to ASP.NET Core for creating RESTful APIs.
+Skyline.DataMiner.Utils.UserDefinedApiToolkit
+===
 
 ## About
 
-This SDK simplifies the creation of User-Defined APIs in DataMiner by providing:
+Quickly build REST APIs in DataMiner using an attribute/controller-based approach similar to ASP.NET Core.
+This package builds upon the [User-Defined API](https://aka.dataminer.services/about-dataminer) actions
+available in DataMiner and makes them easier to use, providing attribute routing, dependency injection,
+typed results, and automatic OpenAPI specification generation.
 
-- **Controller-based architecture**: Define API endpoints using familiar controller classes
-- **Attribute routing**: Use attributes like `[HttpGet]`, `[HttpPost]`, `[Route]` to define routes
-- **Dependency injection**: Built-in DI container support for services and repositories
-- **Automatic OpenAPI documentation**: Generate OpenAPI specifications from your controllers
-- **OData support**: Query your data using OData conventions
+```csharp
+using Microsoft.Extensions.DependencyInjection;
 
-## Getting Started
+using Skyline.DataMiner.Automation;
+using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
+using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
+
+/// <summary>
+///     DataMiner Script Class.
+/// </summary>
+public static class Script
+{
+	private static IUserDefinedApi _api;
+
+	/// <summary>
+	///     The Script entry point.
+	/// </summary>
+	/// <param name="engine">Link with SLScripting process.</param>
+	/// <param name="requestData">The incoming API request.</param>
+	[AutomationEntryPoint(AutomationEntryPointType.Types.OnApiTrigger)]
+	public static ApiTriggerOutput OnApiTrigger(IEngine engine, ApiTriggerInput requestData)
+	{
+		// Build the API once and cache it; AddControllers() scans the calling assembly and
+		// registers every public ControllerBase implementation decorated with [Route].
+		if (_api is null)
+		{
+			_api = UserDefinedApi.CreateBuilder()
+				.AddControllers()
+				.ConfigureServices(services => services.AddScoped<IUserRepository, UserRepository>())
+				.Build();
+		}
+
+		return _api.Run(engine, requestData);
+	}
+}
+
+// You can define your endpoints by inheriting from the ControllerBase class
+[ApiController]
+[Route("v1/users")]
+public class UsersController : ControllerBase
+{
+	private readonly IUserRepository _repository;
+
+	public UsersController(IUserRepository repository)
+	{
+		_repository = repository;
+	}
+
+	[HttpGet]
+	[Produces("application/json")]
+	public ApiResult<UserDto, string> GetById([FromQuery] int id)
+	{
+		var user = _repository.GetById(id);
+		return user is null ? NotFound("User not found.") : Ok(user);
+	}
+
+	[HttpPost]
+	[Consumes("application/json")]
+	public ApiResult<UserDto, string> Create([FromBody] UserDto dto)
+	{
+		_repository.Create(dto);
+		return Created(dto);
+	}
+}
+```
+
+If you have questions, you can post them to
+our [DataMiner community platform](https://community.dataminer.services/questions/).
+
+### Repository structure
+
+| Project | Purpose |
+| --- | --- |
+| `UserDefinedApiToolkit` | The main library (`Skyline.DataMiner.Utils.UserDefinedApiToolkit` on NuGet) — controllers, attributes, DI, routing, and results. |
+| `UserDefinedApiToolkit.Build` | An MSBuild task (`OpenApiTask`) that reflects over a built controller assembly to generate an OpenAPI 3.0 spec. It is not published as its own package — its output is bundled into the main package under `tasks/` and wired up automatically via `build\*.targets`. |
+| `UserDefinedApiToolkit.Tests` | Unit and runtime tests for both projects above (MSTest + FluentAssertions). |
 
 ### Installation
 
-Install the NuGet package:
-
 ```bash
-Install-Package Skyline.DataMiner.SDM.UserDefinedApi
-```
-
-Or via .NET CLI:
-
-```bash
-dotnet add package Skyline.DataMiner.SDM.UserDefinedApi
-```
-
-### Basic Usage
-
-#### 1. Create the API Entry Point
-
-Create your automation script with the API trigger entry point:
-
-```csharp
-namespace Skyline.DataMiner.SDM.Registration.UDAPI
-{
-    using Skyline.DataMiner.Automation;
-    using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
-    using Skyline.DataMiner.SDM.UserDefinedApi;
-    using Skyline.DataMiner.SDM.UserDefinedApi.DI;
-
-    public static class Script
-    {
-        private static IUserDefinedApi _api;
-
-        [AutomationEntryPoint(AutomationEntryPointType.Types.OnApiTrigger)]
-        public static ApiTriggerOutput OnApiTrigger(IEngine engine, ApiTriggerInput requestData)
-        {
-            if (_api is null)
-            {
-                _api = UserDefinedApi.CreateBuilder()
-                    .AddControllers()
-                    .AddRepository<SolutionRegistration, SolutionRegistrationDomRepository>()
-                    .Build();
-            }
-
-            return _api.Run(engine, requestData);
-        }
-    }
-}
-```
-
-#### 2. Define a Controller
-
-Create a controller class that inherits from `ControllerBase`:
-
-```csharp
-using Skyline.DataMiner.SDM.UserDefinedApi;
-
-[ApiController]
-[Route("api/solutions")]
-public class SolutionsController : ControllerBase
-{
-    private readonly ISolutionRegistrationRepository _repository;
-
-    public SolutionsController(ISolutionRegistrationRepository repository)
-    {
-        _repository = repository;
-    }
-
-    [HttpGet]
-    public IActionResult GetAll()
-    {
-        var solutions = _repository.GetAll();
-        return Ok(solutions);
-    }
-
-    [HttpPost]
-    public IActionResult Create([FromBody] SolutionRegistration solution)
-    {
-        _repository.Create(solution);
-        return StatusCode(201, solution);
-    }
-
-    [HttpPut]
-    public IActionResult Update([FromBody] SolutionRegistration solution)
-    {
-        var existing = _repository.GetById(id);
-        if (existing == null)
-        {
-            return NotFound();
-        }
-        
-        _repository.Update(solution);
-        return Ok(solution);
-    }
-
-    [HttpDelete]
-    public IActionResult Delete([FromQuery] string id)
-    {
-        var existing = _repository.GetById(id);
-        if (existing == null)
-        {
-            return NotFound();
-        }
-        
-        _repository.Delete(id);
-        return Ok();
-    }
-}
-```
-
-#### 3. Register Dependencies
-
-Use the builder pattern to register controllers and services:
-
-```csharp
-_api = UserDefinedApi.CreateBuilder()
-    .AddControllers()  // Scans for controllers in the assembly
-    .AddRepository<IMyRepository, MyRepository>()  // Register repositories
-    .Build();
+dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 ```
 
 ## Features
 
-### HTTP Method Attributes
+| Feature | Description |
+| --- | --- |
+| **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]` |
+| **Parameter binding** | `[FromQuery]` and `[FromBody]` |
+| **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
+| **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
+| **OpenAPI generation** | Generates an OpenAPI 3.0 spec from your controllers at build time |
 
-- `[HttpGet]` - Handle GET requests
-- `[HttpPost]` - Handle POST requests
-- `[HttpPut]` - Handle PUT requests
-- `[HttpDelete]` - Handle DELETE requests
+### Generating an OpenAPI specification
 
-### Routing
-
-Define routes using the `[Route]` attribute:
-
-```csharp
-[Route("api/users")]  // Controller-level route
-public class UsersController : ControllerBase
-{
-    [HttpGet]  // GET api/users
-    public IActionResult GetAll() { ... }
-
-    [HttpGet]  // GET api/users?id={id}
-    public IActionResult GetById([FromQuery] string id) { ... }
-
-    [HttpPost]  // POST api/users
-    public IActionResult Create([FromBody] User user) { ... }
-}
-```
-
-### Parameter Binding
-
-- `[FromBody]` - Bind from request body (automatic JSON deserialization)
-- `[FromQuery]` - Bind from query string parameters
-- Route parameters - Currently not supported in User-Defined APIs
-
-### Response Types
-
-Return different HTTP status codes and responses:
-
-```csharp
-// Return 200 OK
-return Ok();
-return Ok(data);
-
-// Return 404 Not Found
-return NotFound();
-return NotFound(message);
-
-// Return custom status code
-return StatusCode(201);
-return StatusCode(201, data);
-```
-
-### Dependency Injection
-
-The framework includes a built-in DI container. Register dependencies during API initialization:
-
-```csharp
-_api = UserDefinedApi.CreateBuilder()
-    .AddControllers()
-    .AddRepository<IRepository, RepositoryImpl>()
-    .ConfigureServices((services) =>
-    {
-        services.AddSingleton<MySingletonClass>();
-    })
-    .Build();
-```
-
-Access dependencies via constructor injection in your controllers:
-
-```csharp
-public class MyController : ControllerBase
-{
-    private readonly IRepository _repository;
-
-    public MyController(IRepository repository)
-    {
-        _repository = repository;
-    }
-}
-```
-
-### OData Support
-
-Query your data using OData conventions for filtering, sorting, and pagination.
-
-### OpenAPI Documentation
-
-The framework can automatically generate OpenAPI 3.0 documentation from your controllers during the build process.
-
-#### Enabling OpenAPI Generation
-
-To enable OpenAPI generation, add the following property to your `.csproj` file:
+Add the following to your API project's `.csproj` to generate an `openapi.yaml` (or `.json`) file in your build output whenever you build:
 
 ```xml
 <PropertyGroup>
   <GenerateOpenApi>True</GenerateOpenApi>
+  <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
 </PropertyGroup>
 ```
 
-By default, this will generate an `openapi.yaml` file in your build output directory under the `openapi` folder.
-
-#### Specifying the Output Format
-
-You can specify the output format (YAML or JSON) using the `OpenApiFormat` property:
-
-```xml
-<PropertyGroup>
-  <GenerateOpenApi>True</GenerateOpenApi>
-  <OpenApiFormat>json</OpenApiFormat>  <!-- Options: yaml (default) or json -->
-</PropertyGroup>
-```
-
-The generated OpenAPI specification will include:
-- All API endpoints from your controllers
-- HTTP methods and route patterns
-- Request and response schemas
-- Parameter definitions
-- Model descriptions
+The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions.
 
 ### Access API Context
 
@@ -260,7 +121,7 @@ Access the underlying API request and response through the `ApiContext` property
 ```csharp
 public class MyController : ControllerBase
 {
-    public IActionResult MyAction()
+    public IApiResult MyAction()
     {
         var request = this.Request;  // ApiTriggerInput
         var response = this.Response;  // ApiTriggerOutput
@@ -268,6 +129,12 @@ public class MyController : ControllerBase
     }
 }
 ```
+
+## Building & testing
+
+- Solution file: `Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx` (target framework `net48`).
+- Build: `dotnet build .\Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx -c Release`
+- Test: `dotnet test .\UserDefinedApiToolkit.Tests\UserDefinedApiToolkit.Tests.csproj`
 
 ## About DataMiner
 

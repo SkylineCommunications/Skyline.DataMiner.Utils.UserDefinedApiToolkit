@@ -1,10 +1,128 @@
-# Skyline.DataMiner.Utils.UserDefinedApiToolkit
+Skyline.DataMiner.Utils.UserDefinedApiToolkit
+===
 
 ## About
 
-A framework for building REST APIs in DataMiner using attribute-based controllers with automatic OpenAPI specification generation.
+Quickly build REST APIs in DataMiner using an attribute/controller-based approach similar to ASP.NET Core.
+This package builds upon the [User-Defined API](https://aka.dataminer.services/about-dataminer) actions
+available in DataMiner and makes them easier to use, providing attribute routing, dependency injection,
+typed results, and automatic OpenAPI specification generation.
 
-### About DataMiner
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+
+using Skyline.DataMiner.Automation;
+using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
+using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
+
+/// <summary>
+///     DataMiner Script Class.
+/// </summary>
+public static class Script
+{
+	private static IUserDefinedApi _api;
+
+	/// <summary>
+	///     The Script entry point.
+	/// </summary>
+	/// <param name="engine">Link with SLScripting process.</param>
+	/// <param name="requestData">The incoming API request.</param>
+	[AutomationEntryPoint(AutomationEntryPointType.Types.OnApiTrigger)]
+	public static ApiTriggerOutput OnApiTrigger(IEngine engine, ApiTriggerInput requestData)
+	{
+		// Build the API once and cache it; AddControllers() scans the calling assembly and
+		// registers every public ControllerBase implementation decorated with [Route].
+		if (_api is null)
+		{
+			_api = UserDefinedApi.CreateBuilder()
+				.AddControllers()
+				.ConfigureServices(services => services.AddScoped<IUserRepository, UserRepository>())
+				.Build();
+		}
+
+		return _api.Run(engine, requestData);
+	}
+}
+
+// You can define your endpoints by inheriting from the ControllerBase class
+[ApiController]
+[Route("v1/users")]
+public class UsersController : ControllerBase
+{
+	private readonly IUserRepository _repository;
+
+	public UsersController(IUserRepository repository)
+	{
+		_repository = repository;
+	}
+
+	[HttpGet]
+	[Produces("application/json")]
+	public ApiResult<UserDto, string> GetById([FromQuery] int id)
+	{
+		var user = _repository.GetById(id);
+		return user is null ? NotFound("User not found.") : Ok(user);
+	}
+
+	[HttpPost]
+	[Consumes("application/json")]
+	public ApiResult<UserDto, string> Create([FromBody] UserDto dto)
+	{
+		_repository.Create(dto);
+		return Created(dto);
+	}
+}
+```
+
+If you have questions, you can post them to
+our [DataMiner community platform](https://community.dataminer.services/questions/).
+
+### Installation
+
+```bash
+dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
+```
+
+## Features
+
+| Feature | Description |
+| --- | --- |
+| **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]` |
+| **Parameter binding** | `[FromQuery]` and `[FromBody]` |
+| **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
+| **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
+| **OpenAPI generation** | Generates an OpenAPI 3.0 spec from your controllers at build time |
+
+### Generating an OpenAPI specification
+
+Add the following to your API project's `.csproj` to generate an `openapi.yaml` (or `.json`) file in your build output whenever you build:
+
+```xml
+<PropertyGroup>
+  <GenerateOpenApi>True</GenerateOpenApi>
+  <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
+</PropertyGroup>
+```
+
+The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions.
+
+### Access API Context
+
+Access the underlying API request and response through the `ApiContext` property:
+
+```csharp
+public class MyController : ControllerBase
+{
+    public IApiResult MyAction()
+    {
+        var request = this.Request;  // ApiTriggerInput
+        var response = this.Response;  // ApiTriggerOutput
+        // ...
+    }
+}
+```
+
+## About DataMiner
 
 DataMiner is a transformational platform that provides vendor-independent control and monitoring of devices and services. Out of the box and by design, it addresses key challenges such as security, complexity, multi-cloud, and much more. It has a pronounced open architecture and powerful capabilities enabling users to evolve easily and continuously.
 
@@ -15,9 +133,7 @@ A unique catalog of 7000+ connectors already exists. In addition, you can levera
 > **Note**
 > See also: [About DataMiner](https://aka.dataminer.services/about-dataminer).
 
-### About Skyline Communications
+## About Skyline Communications
 
 At Skyline Communications, we deal in world-class solutions that are deployed by leading companies around the globe. Check out [our proven track record](https://aka.dataminer.services/about-skyline) and see how we make our customers' lives easier by empowering them to take their operations to the next level.
 
-<!-- Uncomment below and add more info to provide more information about how to use this package. -->
-<!-- ## Getting Started -->

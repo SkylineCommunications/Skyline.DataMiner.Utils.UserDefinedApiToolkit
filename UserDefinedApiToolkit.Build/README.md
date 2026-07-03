@@ -2,7 +2,20 @@
 
 ## About
 
-TODO
+This project provides the `OpenApiTask` MSBuild task used by
+[Skyline.DataMiner.Utils.UserDefinedApiToolkit](https://www.nuget.org/packages/Skyline.DataMiner.Utils.UserDefinedApiToolkit)
+to generate an OpenAPI 3.0 specification from a compiled controller assembly.
+
+It reflects over the built assembly (via `MetadataLoadContext`) to discover `[ApiController]` classes
+and their `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]` actions, and produces an `openapi.yaml`
+(or `.json`) document describing routes, parameters, and response schemas.
+
+> **Note**
+> This project is **not** published as a standalone NuGet package (`GeneratePackageOnBuild` is
+> disabled). Its build output is bundled into the `tasks/` folder of the main
+> `Skyline.DataMiner.Utils.UserDefinedApiToolkit` package and wired up automatically via that
+> package's `build\*.targets` file. Consumers only need to reference the main package and set
+> `<GenerateOpenApi>True</GenerateOpenApi>` in their project — see its README for details.
 
 ### About DataMiner
 
