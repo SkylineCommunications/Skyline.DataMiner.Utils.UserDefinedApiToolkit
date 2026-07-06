@@ -123,8 +123,7 @@
 		/// instead of <see cref="CustomAttributeData.AttributeType"/>. On some .NET
 		/// Framework/Mono test hosts, the <c>AttributeType</c> getter of the
 		/// <c>System.Reflection.MetadataLoadContext</c> package throws a
-		/// <see cref="NullReferenceException"/> for every custom attribute (a runtime-specific
-		/// bug, confirmed to affect unrelated compiler-generated attributes as well as our own),
+		/// <see cref="NullReferenceException"/> for every custom attribute,
 		/// while <c>Constructor.DeclaringType</c> resolves correctly in the same environment.
 		/// The try/catch is kept as a last-resort safety net in case that path also fails for a
 		/// given attribute - a lookup miss then simply means the attribute isn't a match.

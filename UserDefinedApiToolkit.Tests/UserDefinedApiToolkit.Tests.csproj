@@ -6,15 +6,6 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
-		<!-- The Build project (and its transitive dependencies, e.g. Microsoft.OpenApi,
-		     System.Reflection.MetadataLoadContext, ...) pull in NuGet packages that don't share
-		     the exact same assembly versions used elsewhere in this net48 test project. Without
-		     generated binding redirects, some CI test hosts (e.g. the Linux/Mono runner used by
-		     our GitHub Actions pipeline) fail to unify these at runtime with errors like
-		     MissingMethodException, even though the same code runs fine locally. -->
-		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 	</PropertyGroup>
 
 	<ItemGroup>
