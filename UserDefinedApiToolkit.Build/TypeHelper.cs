@@ -40,11 +40,19 @@
 		/// Reads the success and error types from ApiResult&lt;TSuccess&gt; or
 		/// ApiResult&lt;TSuccess, TError&gt;. Returns (null, null) for any other return type.
 		/// </summary>
-		public static (Type? SuccessType, Type? ErrorType) GetResultTypes(Type returnType)
+		/// <remarks>
+		/// Returns a dedicated <see cref="ResultTypes"/> struct rather than a
+		/// <see cref="ValueTuple{T1, T2}"/>. Some .NET Framework/Mono test hosts resolve
+		/// <c>System.ValueTuple</c> inconsistently between the built-in mscorlib type and the
+		/// <c>System.ValueTuple</c> NuGet package pulled in transitively, which can cause a
+		/// <see cref="MissingMethodException"/> at call time even though the method clearly
+		/// exists. A locally defined type has no such ambiguity.
+		/// </remarks>
+		public static ResultTypes GetResultTypes(Type returnType)
 		{
 			if (!returnType.IsGenericType)
 			{
-				return (null, null);
+				return new ResultTypes(null, null);
 			}
 
 			var genericName = returnType.GetGenericTypeDefinition().Name;
@@ -52,15 +60,15 @@
 
 			if (genericName == ApiResult1)
 			{
-				return (args[0], null);
+				return new ResultTypes(args[0], null);
 			}
 
 			if (genericName == ApiResult2)
 			{
-				return (args[0], args[1]);
+				return new ResultTypes(args[0], args[1]);
 			}
 
-			return (null, null);
+			return new ResultTypes(null, null);
 		}
 
 		/// <summary>
@@ -101,6 +109,30 @@
 			return parameter.GetCustomAttributesData()
 				.Any(a => a.AttributeType.Name == attributeName
 					   || a.AttributeType.Name == attributeName + "Attribute");
+		}
+	}
+
+	/// <summary>
+	/// Holds the success and error types read from an ApiResult&lt;TSuccess&gt; or
+	/// ApiResult&lt;TSuccess, TError&gt; return type. See <see cref="TypeHelper.GetResultTypes"/>
+	/// for why this is a dedicated type instead of a <see cref="ValueTuple{T1, T2}"/>.
+	/// </summary>
+	internal readonly struct ResultTypes
+	{
+		public ResultTypes(Type? successType, Type? errorType)
+		{
+			SuccessType = successType;
+			ErrorType = errorType;
+		}
+
+		public Type? SuccessType { get; }
+
+		public Type? ErrorType { get; }
+
+		public void Deconstruct(out Type? successType, out Type? errorType)
+		{
+			successType = SuccessType;
+			errorType = ErrorType;
 		}
 	}
 }

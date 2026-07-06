@@ -54,47 +54,33 @@
 
 		private static ITaskItem[] GetReferencePaths()
 		{
-			// AppDomain.CurrentDomain.GetAssemblies() only reflects assemblies that have
-			// already been touched/loaded by the runtime. Some test hosts (notably the
-			// Linux/Mono runner used in CI) load assemblies more lazily than others, so a
-			// dependency used only by the reflection-loaded fixture controllers (e.g. a base
-			// type or attribute type) might not be in that list yet, causing
-			// MetadataLoadContext to fail resolving it. Force-load the full reference graph of
-			// this test assembly first so every dependency is guaranteed to be present.
-			var loadedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-			var toProcess = new Queue<Assembly>();
-			toProcess.Enqueue(Assembly.GetExecutingAssembly());
+			// MetadataLoadContext/PathAssemblyResolver needs every assembly that could be
+			// referenced (directly or via a custom attribute) by any type in the target
+			// assembly to be present on disk in the resolver's path list - otherwise
+			// CustomAttributeData.AttributeType throws a NullReferenceException while trying
+			// to resolve an attribute's declaring type. Relying on
+			// AppDomain.CurrentDomain.GetAssemblies() is fragile because different test hosts
+			// (notably the Linux/Mono runner used in CI) load assemblies lazily and in a
+			// different order than on Windows, so the exact set of "already loaded" assemblies
+			// varies by platform.
+			//
+			// Instead, deterministically collect every DLL from:
+			//  - the test project's own output directory (contains the compiled test/build
+			//    assemblies plus every NuGet dependency, since net48 copies them all locally),
+			//  - the .NET Framework installation directory (contains mscorlib, System, etc.,
+			//    which PathAssemblyResolver also requires but which are never copied locally).
+			var binDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+			var frameworkDirectory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
-			while (toProcess.Count > 0)
-			{
-				var assembly = toProcess.Dequeue();
-				if (!loadedNames.Add(assembly.GetName().Name))
-				{
-					continue;
-				}
+			var paths = Directory.GetFiles(binDirectory, "*.dll")
+				.Concat(Directory.GetFiles(frameworkDirectory, "*.dll"));
 
-				foreach (var referencedName in assembly.GetReferencedAssemblies())
-				{
-					try
-					{
-						toProcess.Enqueue(Assembly.Load(referencedName));
-					}
-					catch
-					{
-						// Best effort: some referenced assemblies (e.g. facades) may not be
-						// directly loadable; they simply won't be added to the reference list.
-					}
-				}
-			}
-
-			return AppDomain.CurrentDomain.GetAssemblies()
-				.Where(a => !a.IsDynamic && !String.IsNullOrEmpty(a.Location))
+			return paths
 				// PathAssemblyResolver keys assemblies by simple name, so it throws if two
-				// paths resolve to the same simple name (e.g. duplicate copies of a shared
-				// dependency loaded from different probing paths, which can happen on the
-				// CI test host). Keep only the first path seen per simple name.
-				.GroupBy(a => Path.GetFileNameWithoutExtension(a.Location), StringComparer.OrdinalIgnoreCase)
-				.Select(g => g.First().Location)
+				// paths resolve to the same simple name. Prefer the copy from the test
+				// project's own output directory over the framework directory.
+				.GroupBy(Path.GetFileNameWithoutExtension, StringComparer.OrdinalIgnoreCase)
+				.Select(g => g.First())
 				.Select(location => (ITaskItem)new TaskItem(location))
 				.ToArray();
 		}
