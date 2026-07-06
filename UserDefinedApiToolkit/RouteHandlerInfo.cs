@@ -12,6 +12,7 @@
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis;
+	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions;
 
 	internal class RouteHandlerInfo
 	{
@@ -213,17 +214,34 @@
 			{
 				return converter.ConvertInput(context.Request.RawBody, param.ParameterType) ?? new object();
 			}
-			else
+
+			// None of the registered converters can handle this type (e.g. a custom converter
+			// that only targets complex/DTO types). Fall back to the same primitive string
+			// conversion used for query parameters, so simple types (int, bool, Guid, ...) still
+			// work out of the box even without a converter that explicitly supports them.
+			if (StringValueConverter.TryConvert(context.Request.RawBody, param.ParameterType, out var value))
 			{
-				throw new InvalidOperationException($"Could not handle the body parameter '{param.Name}'.");
+				return value!;
 			}
+
+			throw new InvalidParameterException(context, param.Name, context.Request.RawBody, param.ParameterType);
 		}
 
 		private static object HandleQueryParam(ApiContext context, ParameterInfo param)
 		{
 			if (context.Request.QueryParameters.TryGetValue(param.Name, out var value))
 			{
-				return value;
+				if (param.ParameterType == typeof(string))
+				{
+					return value;
+				}
+
+				if (!StringValueConverter.TryConvert(value, param.ParameterType, out var converted))
+				{
+					throw new InvalidParameterException(context, param.Name, value, param.ParameterType);
+				}
+
+				return converted!;
 			}
 			else if (param.HasDefaultValue)
 			{

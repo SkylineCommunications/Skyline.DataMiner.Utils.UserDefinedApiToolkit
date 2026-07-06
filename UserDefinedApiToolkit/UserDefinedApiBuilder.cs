@@ -149,7 +149,13 @@
 			{
 				unhandledParameters.AddRange(handler.MethodParameters.Where(p =>
 				{
-					return !_inputConverters.Reverse<IInputConverter>().Any(c => c.CanConvertInput(p.ParameterType));
+					if (p.GetCustomAttribute<FromBodyAttribute>() is null)
+					{
+						return false;
+					}
+
+					var handledByConverter = _inputConverters.Reverse<IInputConverter>().Any(c => c.CanConvertInput(p.ParameterType));
+					return !handledByConverter && !StringValueConverter.CanConvert(p.ParameterType);
 				}));
 			}
 

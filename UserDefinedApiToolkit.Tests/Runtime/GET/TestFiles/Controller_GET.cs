@@ -32,6 +32,12 @@
 		}
 
 		[HttpGet]
+		public IApiResult GetWithIntQuery(int limit)
+		{
+			return Ok(limit);
+		}
+
+		[HttpGet]
 		public IApiResult GetWithBody([FromBody] string body)
 		{
 			return Ok(body);
