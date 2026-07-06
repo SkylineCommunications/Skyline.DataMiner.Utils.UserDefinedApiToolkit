@@ -1,7 +1,5 @@
 ﻿namespace UserDefinedApiToolkit.Tests.Runtime.GET
 {
-	using System.Web;
-
 	using FluentAssertions;
 
 	using Newtonsoft.Json;
