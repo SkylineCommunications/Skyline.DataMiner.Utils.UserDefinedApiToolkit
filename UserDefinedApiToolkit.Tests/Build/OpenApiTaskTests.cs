@@ -96,6 +96,58 @@
 		}
 
 		[TestMethod]
+		public void Diagnostic_SampleControllerAttributes_ResolveThroughMetadataLoadContext()
+		{
+			// Diagnostic test: on some CI test hosts, filtering by [ApiController]/[Route] has
+			// been observed to silently find zero controllers even though Execute() no longer
+			// throws. This replicates OpenApiTask's exact MetadataLoadContext/PathAssemblyResolver
+			// setup and reports, per custom attribute on SampleController, whether resolving its
+			// AttributeType (and the Constructor.DeclaringType fallback) succeeds - without
+			// letting a single failure hide the others.
+			var targetPath = Assembly.GetExecutingAssembly().Location;
+			var allPaths = GetReferencePaths().Select(r => r.ItemSpec).Append(targetPath);
+			var resolver = new PathAssemblyResolver(allPaths);
+
+			using var mlc = new MetadataLoadContext(resolver);
+			var assembly = mlc.LoadFromAssemblyPath(targetPath);
+			var controllerType = assembly.GetType(typeof(TestFiles.SampleController).FullName!)!;
+
+			var report = new System.Text.StringBuilder();
+			var anyFailed = false;
+
+			foreach (var attributeData in controllerType.GetCustomAttributesData())
+			{
+				string attributeTypeResult;
+				try
+				{
+					attributeTypeResult = attributeData.AttributeType.FullName ?? "<null FullName>";
+				}
+				catch (Exception ex)
+				{
+					anyFailed = true;
+					string constructorFallback;
+					try
+					{
+						constructorFallback = attributeData.Constructor.DeclaringType?.FullName ?? "<null>";
+					}
+					catch (Exception ctorEx)
+					{
+						constructorFallback = $"<also threw: {ctorEx.GetType().Name}: {ctorEx.Message}>";
+					}
+
+					attributeTypeResult = $"THREW {ex.GetType().Name}: {ex.Message} (Constructor.DeclaringType fallback: {constructorFallback})";
+				}
+
+				report.AppendLine($"- {attributeTypeResult}");
+			}
+
+			var because = ("SampleController custom attributes:" + Environment.NewLine + report)
+				.Replace("{", "{{").Replace("}", "}}");
+
+			anyFailed.Should().BeFalse(because);
+		}
+
+		[TestMethod]
 		public void Execute_ValidControllerAssembly_YamlFormat_GeneratesOpenApiFileWithControllerRoute()
 		{
 			var task = CreateTask(_outputPath, "yaml");
