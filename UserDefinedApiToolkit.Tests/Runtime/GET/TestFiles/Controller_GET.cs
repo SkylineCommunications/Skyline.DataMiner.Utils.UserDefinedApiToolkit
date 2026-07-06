@@ -1,5 +1,6 @@
 ﻿namespace UserDefinedApiToolkit.Tests.Runtime.GET.TestFiles
 {
+	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
 
 	[ApiController]
@@ -32,9 +33,21 @@
 		}
 
 		[HttpGet]
+		public IApiResult GetWithIntQuery(int limit)
+		{
+			return Ok(limit);
+		}
+
+		[HttpGet]
 		public IApiResult GetWithBody([FromBody] string body)
 		{
 			return Ok(body);
+		}
+
+		[HttpGet]
+		public IApiResult GetWithFrameworkDependency(string dummy, IEngine engine)
+		{
+			return Ok(dummy);
 		}
 	}
 }

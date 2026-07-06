@@ -37,6 +37,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="UserDefinedApiToolkit.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- Build-only reference: ensures UserDefinedApiToolkit.Build is compiled before this project
 		     is packed, without adding it (or its dependencies) as a compile/runtime reference of this
 		     library. Its output is bundled into this package's "tasks/" folder below instead of being

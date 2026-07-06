@@ -1,5 +1,6 @@
 ﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiTo" +
     "olkit")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UserDefinedApiToolkit.Tests")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName=".NET Framework 4.8")]
 namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 {
@@ -156,6 +157,16 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
         public T Value { get; }
         public override void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
     }
+    public class PlainTextConverter : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter, Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter
+    {
+        public PlainTextConverter() { }
+        public string InputMediaType { get; }
+        public string OutputMediaType { get; }
+        public bool CanConvertInput(System.Type type) { }
+        public bool CanConvertOutput(System.Type type) { }
+        public object? ConvertInput(string input, System.Type type) { }
+        public string ConvertOutput(object? output, System.Type type) { }
+    }
     [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false)]
     public class ProducesAttribute : System.Attribute
     {
@@ -181,16 +192,6 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
         public StatusCodeResult(int statusCode) { }
         public int StatusCode { get; }
         public virtual void ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context) { }
-    }
-    public class StringConverter : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter, Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter
-    {
-        public StringConverter() { }
-        public string InputMediaType { get; }
-        public string OutputMediaType { get; }
-        public bool CanConvertInput(System.Type type) { }
-        public bool CanConvertOutput(System.Type type) { }
-        public object? ConvertInput(string input, System.Type type) { }
-        public string ConvertOutput(object? output, System.Type type) { }
     }
     public class UserDefinedApi : Skyline.DataMiner.Utils.UserDefinedApiToolkit.IUserDefinedApi
     {
@@ -227,6 +228,17 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
         public InvalidControllerException(string message) { }
         protected InvalidControllerException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public InvalidControllerException(string message, System.Exception innerException) { }
+    }
+    [System.Serializable]
+    public class InvalidParameterException : System.Exception
+    {
+        public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType) { }
+        public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType, string message) { }
+        public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType, string message, System.Exception innerException) { }
+        public Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext Context { get; }
+        public string ParameterName { get; }
+        public string RawValue { get; }
+        public System.Type TargetType { get; }
     }
     [System.Serializable]
     public class NoRouteException : System.Exception

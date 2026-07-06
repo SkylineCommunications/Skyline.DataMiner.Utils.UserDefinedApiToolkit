@@ -2,7 +2,7 @@
 {
 	using System;
 
-	public class StringConverter : IInputConverter, IOutputConverter
+	public class PlainTextConverter : IInputConverter, IOutputConverter
 	{
 		public string InputMediaType => "text/plain";
 
