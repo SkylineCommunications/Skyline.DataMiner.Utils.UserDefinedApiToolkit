@@ -41,8 +41,12 @@
 
 			var references = AppDomain.CurrentDomain.GetAssemblies()
 				.Where(a => !a.IsDynamic && !String.IsNullOrEmpty(a.Location))
-				.Select(a => a.Location)
-				.Distinct()
+				// PathAssemblyResolver keys assemblies by simple name, so it throws if two
+				// paths resolve to the same simple name (e.g. duplicate copies of a shared
+				// dependency loaded from different probing paths, which can happen on the
+				// CI test host). Keep only the first path seen per simple name.
+				.GroupBy(a => Path.GetFileNameWithoutExtension(a.Location), StringComparer.OrdinalIgnoreCase)
+				.Select(g => g.First().Location)
 				.Select(location => (ITaskItem)new TaskItem(location))
 				.ToArray();
 
@@ -58,6 +62,16 @@
 			};
 		}
 
+		private static string GetErrorMessage(OpenApiTask task)
+		{
+			var buildEngine = (BuildEngineStub)task.BuildEngine;
+			var message = String.Join(Environment.NewLine, buildEngine.Errors.Select(e => e.Message));
+
+			// FluentAssertions treats the "because" string as a composite format string,
+			// so curly braces in the underlying exception message must be escaped.
+			return message.Replace("{", "{{").Replace("}", "}}");
+		}
+
 		[TestMethod]
 		public void Execute_ValidControllerAssembly_YamlFormat_GeneratesOpenApiFileWithControllerRoute()
 		{
@@ -65,7 +79,7 @@
 
 			var result = task.Execute();
 
-			result.Should().BeTrue();
+			result.Should().BeTrue(GetErrorMessage(task));
 
 			var filePath = Path.Combine(_outputPath, "openapi", "openapi.yaml");
 			File.Exists(filePath).Should().BeTrue();
@@ -82,7 +96,7 @@
 
 			var result = task.Execute();
 
-			result.Should().BeTrue();
+			result.Should().BeTrue(GetErrorMessage(task));
 
 			var filePath = Path.Combine(_outputPath, "openapi", "openapi.json");
 			File.Exists(filePath).Should().BeTrue();
