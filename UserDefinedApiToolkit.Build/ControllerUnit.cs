@@ -19,8 +19,8 @@
 		public string GetRoute()
 		{
 			var attr = ControllerType.GetCustomAttributesData()
-				.FirstOrDefault(a => a.AttributeType.Name == "Route" ||
-									 a.AttributeType.Name == "RouteAttribute");
+				.FirstOrDefault(a => TypeHelper.GetAttributeName(a) == "Route" ||
+									 TypeHelper.GetAttributeName(a) == "RouteAttribute");
 
 			return attr?.ConstructorArguments[0].Value as string ?? "/";
 		}

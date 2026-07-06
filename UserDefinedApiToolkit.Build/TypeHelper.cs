@@ -40,11 +40,19 @@
 		/// Reads the success and error types from ApiResult&lt;TSuccess&gt; or
 		/// ApiResult&lt;TSuccess, TError&gt;. Returns (null, null) for any other return type.
 		/// </summary>
-		public static (Type? SuccessType, Type? ErrorType) GetResultTypes(Type returnType)
+		/// <remarks>
+		/// Returns a dedicated <see cref="ResultTypes"/> struct rather than a
+		/// <see cref="ValueTuple{T1, T2}"/>. Some .NET Framework/Mono test hosts resolve
+		/// <c>System.ValueTuple</c> inconsistently between the built-in mscorlib type and the
+		/// <c>System.ValueTuple</c> NuGet package pulled in transitively, which can cause a
+		/// <see cref="MissingMethodException"/> at call time even though the method clearly
+		/// exists. A locally defined type has no such ambiguity.
+		/// </remarks>
+		public static ResultTypes GetResultTypes(Type returnType)
 		{
 			if (!returnType.IsGenericType)
 			{
-				return (null, null);
+				return new ResultTypes(null, null);
 			}
 
 			var genericName = returnType.GetGenericTypeDefinition().Name;
@@ -52,15 +60,15 @@
 
 			if (genericName == ApiResult1)
 			{
-				return (args[0], null);
+				return new ResultTypes(args[0], null);
 			}
 
 			if (genericName == ApiResult2)
 			{
-				return (args[0], args[1]);
+				return new ResultTypes(args[0], args[1]);
 			}
 
-			return (null, null);
+			return new ResultTypes(null, null);
 		}
 
 		/// <summary>
@@ -69,7 +77,7 @@
 		public static bool HasDomStorageAttribute(Type type)
 		{
 			return type.GetCustomAttributesData()
-				.Any(a => a.AttributeType.Name == SdmDomStorageAttribute);
+				.Any(a => GetAttributeName(a) == SdmDomStorageAttribute);
 		}
 
 		/// <summary>
@@ -88,8 +96,7 @@
 		public static bool HasAttribute(MemberInfo member, string attributeName)
 		{
 			return member.GetCustomAttributesData()
-				.Any(a => a.AttributeType.Name == attributeName
-					   || a.AttributeType.Name == attributeName + "Attribute");
+				.Any(a => Matches(GetAttributeName(a), attributeName));
 		}
 
 		/// <summary>
@@ -99,8 +106,62 @@
 		public static bool HasAttribute(ParameterInfo parameter, string attributeName)
 		{
 			return parameter.GetCustomAttributesData()
-				.Any(a => a.AttributeType.Name == attributeName
-					   || a.AttributeType.Name == attributeName + "Attribute");
+				.Any(a => Matches(GetAttributeName(a), attributeName));
+		}
+
+		private static bool Matches(string? actualAttributeName, string expectedAttributeName)
+		{
+			return actualAttributeName == expectedAttributeName
+				|| actualAttributeName == expectedAttributeName + "Attribute";
+		}
+
+		/// <summary>
+		/// Reads the custom attribute's declaring type name defensively.
+		/// </summary>
+		/// <remarks>
+		/// This intentionally uses <see cref="CustomAttributeData.Constructor"/>.DeclaringType
+		/// instead of <see cref="CustomAttributeData.AttributeType"/>. On some .NET
+		/// Framework/Mono test hosts, the <c>AttributeType</c> getter of the
+		/// <c>System.Reflection.MetadataLoadContext</c> package throws a
+		/// <see cref="NullReferenceException"/> for every custom attribute,
+		/// while <c>Constructor.DeclaringType</c> resolves correctly in the same environment.
+		/// The try/catch is kept as a last-resort safety net in case that path also fails for a
+		/// given attribute - a lookup miss then simply means the attribute isn't a match.
+		/// </remarks>
+		public static string? GetAttributeName(CustomAttributeData attributeData)
+		{
+			try
+			{
+				return attributeData.Constructor.DeclaringType?.Name;
+			}
+			catch
+			{
+				return null;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Holds the success and error types read from an ApiResult&lt;TSuccess&gt; or
+	/// ApiResult&lt;TSuccess, TError&gt; return type. See <see cref="TypeHelper.GetResultTypes"/>
+	/// for why this is a dedicated type instead of a <see cref="ValueTuple{T1, T2}"/>.
+	/// </summary>
+	internal readonly struct ResultTypes
+	{
+		public ResultTypes(Type? successType, Type? errorType)
+		{
+			SuccessType = successType;
+			ErrorType = errorType;
+		}
+
+		public Type? SuccessType { get; }
+
+		public Type? ErrorType { get; }
+
+		public void Deconstruct(out Type? successType, out Type? errorType)
+		{
+			successType = SuccessType;
+			errorType = ErrorType;
 		}
 	}
 }
