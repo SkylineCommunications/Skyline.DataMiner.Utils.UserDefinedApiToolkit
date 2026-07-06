@@ -88,9 +88,10 @@
 			}
 			catch (Exception ex)
 			{
-				Log.LogErrorFromException(ex);
-				Log.LogMessage(MessageImportance.High, $"Error generating OpenAPI file: {ex.Message}");
-				Log.LogMessage(MessageImportance.High, ex.StackTrace);
+				// showStackTrace: true ensures the full exception (including stack trace and any
+				// inner exceptions) ends up as a build ERROR, not just a low-visibility message —
+				// otherwise consumers only see the bare ex.Message on build failure.
+				Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: null);
 				return false;
 			}
 		}

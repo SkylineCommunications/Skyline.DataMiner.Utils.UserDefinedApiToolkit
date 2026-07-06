@@ -38,17 +38,7 @@
 			// The test assembly itself contains [ApiController] fixtures (e.g. SampleController,
 			// Controller_GET), so it can be used directly as the target assembly to analyze.
 			var targetPath = Assembly.GetExecutingAssembly().Location;
-
-			var references = AppDomain.CurrentDomain.GetAssemblies()
-				.Where(a => !a.IsDynamic && !String.IsNullOrEmpty(a.Location))
-				// PathAssemblyResolver keys assemblies by simple name, so it throws if two
-				// paths resolve to the same simple name (e.g. duplicate copies of a shared
-				// dependency loaded from different probing paths, which can happen on the
-				// CI test host). Keep only the first path seen per simple name.
-				.GroupBy(a => Path.GetFileNameWithoutExtension(a.Location), StringComparer.OrdinalIgnoreCase)
-				.Select(g => g.First().Location)
-				.Select(location => (ITaskItem)new TaskItem(location))
-				.ToArray();
+			var references = GetReferencePaths();
 
 			return new OpenApiTask
 			{
@@ -60,6 +50,53 @@
 				References = references,
 				Format = format,
 			};
+		}
+
+		private static ITaskItem[] GetReferencePaths()
+		{
+			// AppDomain.CurrentDomain.GetAssemblies() only reflects assemblies that have
+			// already been touched/loaded by the runtime. Some test hosts (notably the
+			// Linux/Mono runner used in CI) load assemblies more lazily than others, so a
+			// dependency used only by the reflection-loaded fixture controllers (e.g. a base
+			// type or attribute type) might not be in that list yet, causing
+			// MetadataLoadContext to fail resolving it. Force-load the full reference graph of
+			// this test assembly first so every dependency is guaranteed to be present.
+			var loadedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+			var toProcess = new Queue<Assembly>();
+			toProcess.Enqueue(Assembly.GetExecutingAssembly());
+
+			while (toProcess.Count > 0)
+			{
+				var assembly = toProcess.Dequeue();
+				if (!loadedNames.Add(assembly.GetName().Name))
+				{
+					continue;
+				}
+
+				foreach (var referencedName in assembly.GetReferencedAssemblies())
+				{
+					try
+					{
+						toProcess.Enqueue(Assembly.Load(referencedName));
+					}
+					catch
+					{
+						// Best effort: some referenced assemblies (e.g. facades) may not be
+						// directly loadable; they simply won't be added to the reference list.
+					}
+				}
+			}
+
+			return AppDomain.CurrentDomain.GetAssemblies()
+				.Where(a => !a.IsDynamic && !String.IsNullOrEmpty(a.Location))
+				// PathAssemblyResolver keys assemblies by simple name, so it throws if two
+				// paths resolve to the same simple name (e.g. duplicate copies of a shared
+				// dependency loaded from different probing paths, which can happen on the
+				// CI test host). Keep only the first path seen per simple name.
+				.GroupBy(a => Path.GetFileNameWithoutExtension(a.Location), StringComparer.OrdinalIgnoreCase)
+				.Select(g => g.First().Location)
+				.Select(location => (ITaskItem)new TaskItem(location))
+				.ToArray();
 		}
 
 		private static string GetErrorMessage(OpenApiTask task)

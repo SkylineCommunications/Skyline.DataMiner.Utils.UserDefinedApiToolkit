@@ -1,6 +1,8 @@
 ﻿namespace UserDefinedApiToolkit.Tests.Build
 {
 	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reflection;
 
 	using FluentAssertions;
 
@@ -10,6 +12,33 @@
 	[TestClass]
 	public sealed class TypeHelperTests
 	{
+		[TestMethod]
+		public void Diagnostic_TypeHelperAssembly_ExposesGetResultTypesMethod()
+		{
+			// Diagnostic test: on some CI test hosts, GetResultTypes() has been observed to throw
+			// MissingMethodException even though the source clearly defines it. typeof(TypeHelper)
+			// and GetMethods() bind to whatever assembly the runtime actually loaded (without
+			// invoking the method itself, which is what triggers the JIT resolution failure), so
+			// this reports the real assembly location/version/method list for troubleshooting.
+			var assembly = typeof(TypeHelper).Assembly;
+			var methodSignatures = typeof(TypeHelper)
+				.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic)
+				.Select(m => $"{m.ReturnType} {m.Name}({String.Join(",", m.GetParameters().Select(p => p.ParameterType.ToString()))})")
+				.ToList();
+
+			var info = $"Assembly location: {assembly.Location}{Environment.NewLine}" +
+					   $"Assembly full name: {assembly.FullName}{Environment.NewLine}" +
+					   $"Public/internal static methods:{Environment.NewLine}  " +
+					   String.Join($"{Environment.NewLine}  ", methodSignatures);
+
+			// Escape braces: FluentAssertions treats "because" as a composite format string.
+			var because = info.Replace("{", "{{").Replace("}", "}}");
+
+			methodSignatures.Should().Contain(
+				m => m.Contains("GetResultTypes"),
+				because);
+		}
+
 		[TestMethod]
 		public void GetElementType_Array_ReturnsElementType()
 		{
