@@ -1,16 +1,11 @@
 ﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build
 {
 	using System;
-	using System.Collections.Generic;
 	using System.IO;
 	using System.Linq;
-	using System.Reflection;
-	using System.Runtime.InteropServices.ComTypes;
-	using System.Xml.Linq;
 
 	using Microsoft.Build.Framework;
 	using Microsoft.Build.Utilities;
-	using Microsoft.OpenApi;
 
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.OpenApi;
 
@@ -69,20 +64,21 @@
 			{
 				Log.LogMessage(MessageImportance.Normal, $"Generating OpenAPI file for project '{ProjectName}' version '{ProjectVersion}'...");
 
-				var doc = CreateDocument(
+				var doc = OpenApiProjectGenerator.CreateDocument(
 					 TargetPath,
 					 References.Select(r => r.ItemSpec),
 					 DocumentationFile,
 					 ProjectName,
 					 ProjectVersion,
-					 message => Log.LogMessage(MessageImportance.High, message));
+					 new MsBuildLogger(Log));
 
-				var (fileName, content) = FormatDocument(doc, Format);
+				var (fileName, content) = OpenApiProjectGenerator.FormatDocument(doc, Format);
 
 				var outputPath = Path.Combine(OutputPath, "openapi", fileName);
 				Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 				File.WriteAllText(outputPath, content);
 
+				Log.LogMessage(MessageImportance.Normal, $"Generated OpenAPI document with {doc.Paths.Count} path(s).");
 				Log.LogMessage(MessageImportance.Normal, $"OpenApi file generated at: {outputPath}");
 				return true;
 			}
@@ -93,64 +89,6 @@
 				// otherwise consumers only see the bare ex.Message on build failure.
 				Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: null);
 				return false;
-			}
-		}
-
-		private static OpenApiDocument CreateDocument(
-			string targetPath,
-			IEnumerable<string> references,
-			string? documentationFile,
-			string projectName,
-			string projectVersion,
-			Action<string>? logMethod = null)
-		{
-			var allPaths = references.Append(targetPath);
-			var resolver = new PathAssemblyResolver(allPaths);
-
-			using var mlc = new MetadataLoadContext(resolver);
-			var assembly = mlc.LoadFromAssemblyPath(targetPath);
-			var xmlDocs = LoadXmlDocs(documentationFile);
-
-			var controllers = assembly.GetTypes()
-				.Where(t => t.IsClass &&
-							!t.IsAbstract &&
-							TypeHelper.HasAttribute(t, "ApiController") &&
-							TypeHelper.HasAttribute(t, "Route") &&
-							t.BaseType?.Name == "ControllerBase")
-				.Select(t => new ControllerUnit(t, xmlDocs))
-				.ToList();
-
-			var doc = OpenApiGenerator.Create(controllers, xmlDocs, logMethod);
-			doc.Info.Title = projectName ?? "User Defined API";
-			doc.Info.Version = projectVersion ?? "1.0.0";
-
-			return doc;
-		}
-
-		private static XDocument? LoadXmlDocs(string? documentationFile)
-		{
-			if (String.IsNullOrEmpty(documentationFile) || !File.Exists(documentationFile))
-			{
-				return null;
-			}
-
-			return XDocument.Load(documentationFile);
-		}
-
-		private static (string, string) FormatDocument(OpenApiDocument doc, string format)
-		{
-			using var sw = new StringWriter();
-			if (format.Equals("json", StringComparison.OrdinalIgnoreCase))
-			{
-				var writer = new OpenApiJsonWriter(sw);
-				doc.SerializeAsV3(writer);
-				return ("openapi.json", sw.ToString());
-			}
-			else
-			{
-				var writer = new OpenApiYamlWriter(sw);
-				doc.SerializeAsV3(writer);
-				return ("openapi.yaml", sw.ToString());
 			}
 		}
 	}
