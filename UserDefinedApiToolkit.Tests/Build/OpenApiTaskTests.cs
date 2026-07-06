@@ -96,14 +96,15 @@
 		}
 
 		[TestMethod]
-		public void Diagnostic_SampleControllerAttributes_ResolveThroughMetadataLoadContext()
+		public void SampleControllerAttributes_ResolveThroughConstructorDeclaringType()
 		{
-			// Diagnostic test: on some CI test hosts, filtering by [ApiController]/[Route] has
-			// been observed to silently find zero controllers even though Execute() no longer
-			// throws. This replicates OpenApiTask's exact MetadataLoadContext/PathAssemblyResolver
-			// setup and reports, per custom attribute on SampleController, whether resolving its
-			// AttributeType (and the Constructor.DeclaringType fallback) succeeds - without
-			// letting a single failure hide the others.
+			// Regression guard: on some .NET Framework/Mono test hosts, the
+			// System.Reflection.MetadataLoadContext package's CustomAttributeData.AttributeType
+			// getter throws NullReferenceException for every custom attribute (confirmed via a
+			// prior diagnostic run - a runtime-specific bug, not a missing-assembly issue).
+			// TypeHelper.HasAttribute therefore resolves the declaring type via
+			// CustomAttributeData.Constructor.DeclaringType instead, which works reliably in
+			// that same environment. This verifies that resolution path directly.
 			var targetPath = Assembly.GetExecutingAssembly().Location;
 			var allPaths = GetReferencePaths().Select(r => r.ItemSpec).Append(targetPath);
 			var resolver = new PathAssemblyResolver(allPaths);
@@ -112,39 +113,12 @@
 			var assembly = mlc.LoadFromAssemblyPath(targetPath);
 			var controllerType = assembly.GetType(typeof(TestFiles.SampleController).FullName!)!;
 
-			var report = new System.Text.StringBuilder();
-			var anyFailed = false;
+			var declaringTypeNames = controllerType.GetCustomAttributesData()
+				.Select(a => a.Constructor.DeclaringType?.Name)
+				.ToList();
 
-			foreach (var attributeData in controllerType.GetCustomAttributesData())
-			{
-				string attributeTypeResult;
-				try
-				{
-					attributeTypeResult = attributeData.AttributeType.FullName ?? "<null FullName>";
-				}
-				catch (Exception ex)
-				{
-					anyFailed = true;
-					string constructorFallback;
-					try
-					{
-						constructorFallback = attributeData.Constructor.DeclaringType?.FullName ?? "<null>";
-					}
-					catch (Exception ctorEx)
-					{
-						constructorFallback = $"<also threw: {ctorEx.GetType().Name}: {ctorEx.Message}>";
-					}
-
-					attributeTypeResult = $"THREW {ex.GetType().Name}: {ex.Message} (Constructor.DeclaringType fallback: {constructorFallback})";
-				}
-
-				report.AppendLine($"- {attributeTypeResult}");
-			}
-
-			var because = ("SampleController custom attributes:" + Environment.NewLine + report)
-				.Replace("{", "{{").Replace("}", "}}");
-
-			anyFailed.Should().BeFalse(because);
+			declaringTypeNames.Should().Contain("ApiControllerAttribute");
+			declaringTypeNames.Should().Contain("RouteAttribute");
 		}
 
 		[TestMethod]
