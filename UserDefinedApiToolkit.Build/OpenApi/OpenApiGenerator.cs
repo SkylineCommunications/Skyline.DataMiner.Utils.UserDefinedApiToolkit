@@ -11,7 +11,7 @@
 
 	internal class OpenApiGenerator
 	{
-		public static OpenApiDocument Create(IList<ControllerUnit> controllers, XDocument? xmlDocs, Action<string>? logMethod = null)
+		public static OpenApiDocument Create(IList<ControllerUnit> controllers, XDocument? xmlDocs, IBuildLogger? log = null)
 		{
 			var doc = new OpenApiDocument
 			{
@@ -98,7 +98,7 @@
 
 			foreach (var controller in controllers)
 			{
-				pathBuilder.HandleController(doc, controller, logMethod);
+				pathBuilder.HandleController(doc, controller, log);
 			}
 
 			return doc;

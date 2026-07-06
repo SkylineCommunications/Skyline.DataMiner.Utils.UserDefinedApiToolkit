@@ -14,7 +14,7 @@
 			_operationProvider = operationProvider;
 		}
 
-		public void HandleController(OpenApiDocument doc, ControllerUnit unit, Action<string>? logMethod = null)
+		public void HandleController(OpenApiDocument doc, ControllerUnit unit, IBuildLogger? log = null)
 		{
 			var pathItem = new OpenApiPathItem();
 			foreach (var method in unit.ControllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
@@ -24,7 +24,7 @@
 					continue;
 				}
 
-				logMethod?.Invoke($"Registering {httpMethod.Method} /{unit.GetRoute().Trim('/')} → {unit.ControllerType.Name}.{method.Name}");
+				log?.Log(BuildLogLevel.Detail, $"Registering {httpMethod.Method} /{unit.GetRoute().Trim('/')} → {unit.ControllerType.Name}.{method.Name}");
 
 				pathItem.AddOperation(httpMethod, operation);
 			}
