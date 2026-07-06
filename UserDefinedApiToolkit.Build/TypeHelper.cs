@@ -77,7 +77,7 @@
 		public static bool HasDomStorageAttribute(Type type)
 		{
 			return type.GetCustomAttributesData()
-				.Any(a => TryGetAttributeTypeName(a) == SdmDomStorageAttribute);
+				.Any(a => GetAttributeName(a) == SdmDomStorageAttribute);
 		}
 
 		/// <summary>
@@ -96,7 +96,7 @@
 		public static bool HasAttribute(MemberInfo member, string attributeName)
 		{
 			return member.GetCustomAttributesData()
-				.Any(a => Matches(TryGetAttributeTypeName(a), attributeName));
+				.Any(a => Matches(GetAttributeName(a), attributeName));
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@
 		public static bool HasAttribute(ParameterInfo parameter, string attributeName)
 		{
 			return parameter.GetCustomAttributesData()
-				.Any(a => Matches(TryGetAttributeTypeName(a), attributeName));
+				.Any(a => Matches(GetAttributeName(a), attributeName));
 		}
 
 		private static bool Matches(string? actualAttributeName, string expectedAttributeName)
@@ -115,18 +115,6 @@
 				|| actualAttributeName == expectedAttributeName + "Attribute";
 		}
 
-		/// <summary>
-		/// Reads <see cref="CustomAttributeData.AttributeType"/>.Name defensively.
-		/// </summary>
-		/// <remarks>
-		/// On some .NET Framework/Mono test hosts, resolving the declaring type of a custom
-		/// attribute can throw a <see cref="NullReferenceException"/> when the assembly
-		/// defining that (unrelated) attribute couldn't be fully resolved by the reflection
-		/// context - even though the attribute we're actually looking for is unaffected.
-		/// Since callers only care about matching one specific attribute name, an attribute
-		/// whose type can't be resolved simply can't be a match and is skipped instead of
-		/// failing the whole lookup.
-		/// </remarks>
 		/// <summary>
 		/// Reads the custom attribute's declaring type name defensively.
 		/// </summary>
@@ -141,7 +129,7 @@
 		/// The try/catch is kept as a last-resort safety net in case that path also fails for a
 		/// given attribute - a lookup miss then simply means the attribute isn't a match.
 		/// </remarks>
-		private static string? TryGetAttributeTypeName(CustomAttributeData attributeData)
+		public static string? GetAttributeName(CustomAttributeData attributeData)
 		{
 			try
 			{

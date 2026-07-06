@@ -65,7 +65,7 @@
 
 			foreach (var attr in method.GetCustomAttributesData())
 			{
-				switch (attr.AttributeType.Name)
+				switch (TypeHelper.GetAttributeName(attr))
 				{
 					case "HttpGetAttribute": httpMethod = HttpMethod.Get; return true;
 					case "HttpPostAttribute": httpMethod = HttpMethod.Post; return true;
@@ -86,8 +86,8 @@
 
 			// Priority 1: explicit [ProducesResponseType] attributes
 			var producesAttrs = method.GetCustomAttributesData()
-				.Where(a => a.AttributeType.Name == "ProducesResponseType" ||
-							a.AttributeType.Name == "ProducesResponseTypeAttribute")
+				.Where(a => TypeHelper.GetAttributeName(a) == "ProducesResponseType" ||
+							TypeHelper.GetAttributeName(a) == "ProducesResponseTypeAttribute")
 				.ToList();
 
 			foreach (var attr in producesAttrs)
@@ -180,7 +180,7 @@
 		{
 			foreach (var attr in param.GetCustomAttributesData())
 			{
-				switch (attr.AttributeType.Name)
+				switch (TypeHelper.GetAttributeName(attr))
 				{
 					case "FromQueryAttribute": return ParameterLocation.Query;
 					case "FromHeaderAttribute": return ParameterLocation.Header;
@@ -218,11 +218,11 @@
 		{
 			// Method-level takes priority over controller-level
 			var attr = method.GetCustomAttributesData()
-							 .FirstOrDefault(a => a.AttributeType.Name == attributeName ||
-												  a.AttributeType.Name == $"{attributeName}Attribute")
+							 .FirstOrDefault(a => TypeHelper.GetAttributeName(a) == attributeName ||
+												  TypeHelper.GetAttributeName(a) == $"{attributeName}Attribute")
 					  ?? unit.ControllerType.GetCustomAttributesData()
-							 .FirstOrDefault(a => a.AttributeType.Name == attributeName ||
-												  a.AttributeType.Name == $"{attributeName}Attribute");
+							 .FirstOrDefault(a => TypeHelper.GetAttributeName(a) == attributeName ||
+												  TypeHelper.GetAttributeName(a) == $"{attributeName}Attribute");
 
 			if (attr is null)
 			{
