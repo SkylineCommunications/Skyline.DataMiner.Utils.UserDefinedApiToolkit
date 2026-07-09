@@ -58,8 +58,8 @@
 					OutputConverters = _outputConverters,
 				};
 
-				var route = _routeSelector.SelectRoute(apiContext);
-				var controller = route.CreateController(engine, scope.ServiceProvider);
+				var route = _routeSelector.SelectRoute(apiContext, scope.ServiceProvider);
+				var controller = route.CreateController(scope.ServiceProvider);
 				controller.ApiContext = apiContext;
 
 				var result = route.Invoke(apiContext, controller, scope.ServiceProvider);

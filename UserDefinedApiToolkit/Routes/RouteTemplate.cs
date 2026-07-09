@@ -86,5 +86,51 @@
 
 			return RouteSegment.Literal(segment);
 		}
+
+		/// <summary>
+		/// Attempts to match <paramref name="requestRoute"/> against this template segment-by-
+		/// segment. Literal segments must match exactly; placeholder segments match any value and
+		/// are captured into the result by placeholder name.
+		/// </summary>
+		/// <param name="requestRoute">The incoming request route to match, e.g. <c>"items/5"</c>.</param>
+		/// <returns>A <see cref="RouteMatch"/> describing whether and how <paramref name="requestRoute"/> matches this template.</returns>
+		public RouteMatch Match(string requestRoute)
+		{
+			var requestSegments = SplitSegments(requestRoute);
+
+			if (requestSegments.Length != Segments.Count)
+			{
+				return RouteMatch.NoMatch;
+			}
+
+			var values = new Dictionary<string, string>();
+			var literalCount = 0;
+			for (int i = 0; i < Segments.Count; i++)
+			{
+				var templateSegment = Segments[i];
+				var requestSegment = requestSegments[i];
+
+				if (templateSegment.IsPlaceholder)
+				{
+					values[templateSegment.Value] = requestSegment;
+					continue;
+				}
+
+				if (!String.Equals(templateSegment.Value, requestSegment, StringComparison.Ordinal))
+				{
+					return RouteMatch.NoMatch;
+				}
+
+				literalCount++;
+			}
+
+			return RouteMatch.Success(literalCount, values);
+		}
+
+		private static string[] SplitSegments(string route)
+		{
+			var trimmed = route?.Trim('/') ?? String.Empty;
+			return String.IsNullOrEmpty(trimmed) ? Array.Empty<string>() : trimmed.Split('/');
+		}
 	}
 }
