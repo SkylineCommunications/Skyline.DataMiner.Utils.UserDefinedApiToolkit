@@ -20,6 +20,8 @@
 		/// Returns a $ref for complex types (and registers them in components/schemas),
 		/// or an inline schema for primitives.
 		/// </summary>
+		/// <param name="type">The type to get or register an OpenAPI schema for.</param>
+		/// <returns>The OpenAPI schema for <paramref name="type"/>, or <c>null</c> if <paramref name="type"/> is <c>null</c>.</returns>
 		public IOpenApiSchema? GetOrRegisterSchema(Type type)
 		{
 			if (type is null) return null;

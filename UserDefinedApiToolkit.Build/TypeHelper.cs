@@ -18,6 +18,8 @@
 		/// Gets the element type of an array or IEnumerable&lt;T&gt;.
 		/// Returns the type itself if it is not a collection.
 		/// </summary>
+		/// <param name="type">The type to inspect.</param>
+		/// <returns>The element type, or <paramref name="type"/> itself if it is not a collection.</returns>
 		public static Type GetElementType(Type type)
 		{
 			if (type.IsArray)
@@ -48,6 +50,8 @@
 		/// <see cref="MissingMethodException"/> at call time even though the method clearly
 		/// exists. A locally defined type has no such ambiguity.
 		/// </remarks>
+		/// <param name="returnType">The action method's declared return type.</param>
+		/// <returns>The extracted success/error types, or <c>(null, null)</c> if <paramref name="returnType"/> is not <c>ApiResult&lt;TSuccess&gt;</c>/<c>ApiResult&lt;TSuccess, TError&gt;</c>.</returns>
 		public static ResultTypes GetResultTypes(Type returnType)
 		{
 			if (!returnType.IsGenericType)
@@ -74,6 +78,8 @@
 		/// <summary>
 		/// Returns true if the type has the SdmDomStorageAttribute applied.
 		/// </summary>
+		/// <param name="type">The type to inspect.</param>
+		/// <returns><c>true</c> if the type has the <c>SdmDomStorageAttribute</c> applied; otherwise, <c>false</c>.</returns>
 		public static bool HasDomStorageAttribute(Type type)
 		{
 			return type.GetCustomAttributesData()
@@ -83,6 +89,8 @@
 		/// <summary>
 		/// Returns true if the type is SdmObjectReference&lt;T&gt;.
 		/// </summary>
+		/// <param name="type">The type to inspect.</param>
+		/// <returns><c>true</c> if the type is <c>SdmObjectReference&lt;T&gt;</c>; otherwise, <c>false</c>.</returns>
 		public static bool IsSdmObjectReference(Type type)
 		{
 			return type.IsGenericType &&
@@ -93,6 +101,9 @@
 		/// Returns true if the member has an attribute matching the given name
 		/// (with or without the "Attribute" suffix).
 		/// </summary>
+		/// <param name="member">The member to inspect.</param>
+		/// <param name="attributeName">The attribute name to match, with or without the "Attribute" suffix.</param>
+		/// <returns><c>true</c> if a matching attribute is found; otherwise, <c>false</c>.</returns>
 		public static bool HasAttribute(MemberInfo member, string attributeName)
 		{
 			return member.GetCustomAttributesData()
@@ -103,6 +114,9 @@
 		/// Returns true if the parameter has an attribute matching the given name
 		/// (with or without the "Attribute" suffix).
 		/// </summary>
+		/// <param name="parameter">The parameter to inspect.</param>
+		/// <param name="attributeName">The attribute name to match, with or without the "Attribute" suffix.</param>
+		/// <returns><c>true</c> if a matching attribute is found; otherwise, <c>false</c>.</returns>
 		public static bool HasAttribute(ParameterInfo parameter, string attributeName)
 		{
 			return parameter.GetCustomAttributesData()
@@ -128,6 +142,8 @@
 		/// The try/catch is kept as a last-resort safety net in case that path also fails for a
 		/// given attribute - a lookup miss then simply means the attribute isn't a match.
 		/// </remarks>
+		/// <param name="attributeData">The parsed attribute data to inspect.</param>
+		/// <returns>The attribute's declaring type name, or <c>null</c> if it could not be determined.</returns>
 		public static string? GetAttributeName(CustomAttributeData attributeData)
 		{
 			try
@@ -138,6 +154,53 @@
 			{
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// Reads the value of a named argument (e.g. <c>Name</c> on <c>[FromRoute(Name = "id")]</c>)
+		/// from a parsed attribute, or <c>null</c> if not present.
+		/// </summary>
+		/// <param name="attributeData">The parsed attribute data to inspect.</param>
+		/// <param name="argumentName">The name of the named argument to read.</param>
+		/// <returns>The string value of the named argument, or <c>null</c> if not present.</returns>
+		public static string? GetNamedArgumentValue(CustomAttributeData attributeData, string argumentName)
+		{
+			var namedArguments = attributeData.NamedArguments;
+			if (namedArguments is null)
+			{
+				return null;
+			}
+
+			foreach (var namedArgument in namedArguments)
+			{
+				if (namedArgument.MemberName == argumentName)
+				{
+					return namedArgument.TypedValue.Value as string;
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Extracts the <c>{placeholder}</c> names from a combined route template string
+		/// (e.g. <c>"v1/items/{id}"</c> → <c>["id"]</c>).
+		/// </summary>
+		/// <param name="routeTemplate">The combined route template to extract placeholders from.</param>
+		/// <returns>The placeholder names found in <paramref name="routeTemplate"/>, in order.</returns>
+		public static IReadOnlyCollection<string> GetRoutePlaceholders(string? routeTemplate)
+		{
+			if (String.IsNullOrEmpty(routeTemplate))
+			{
+				return Array.Empty<string>();
+			}
+
+			return routeTemplate!
+				.Trim('/')
+				.Split('/')
+				.Where(segment => segment.Length > 2 && segment[0] == '{' && segment[segment.Length - 1] == '}')
+				.Select(segment => segment.Substring(1, segment.Length - 2))
+				.ToList();
 		}
 	}
 

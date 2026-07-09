@@ -4,8 +4,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
-	using System.Text;
-	using System.Threading.Tasks;
 
 	using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +11,7 @@
 	using Skyline.DataMiner.Net;
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions;
+	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Routes;
 
 	internal class RouteHandlerInfo
 	{
@@ -27,7 +26,7 @@
 			ConstructorInfo = controllerType.GetConstructors().OrderByDescending(c => c.GetParameters().Length).FirstOrDefault() ?? throw new InvalidOperationException($"No public constructors found for controller type '{controllerType.FullName}'.");
 			ConstructorParameters = ConstructorInfo.GetParameters();
 			HttpMethod = httpMethod;
-			Route = route ?? throw new ArgumentNullException(nameof(route));
+			Template = RouteTemplate.Parse(route ?? throw new ArgumentNullException(nameof(route)));
 			MethodInfo = methodInfo ?? throw new ArgumentNullException(nameof(methodInfo));
 			MethodParameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
 		}
@@ -40,7 +39,11 @@
 
 		public RequestMethod HttpMethod { get; }
 
-		public string Route { get; }
+		/// <summary>
+		/// Gets the parsed route template (literal and <c>{placeholder}</c> segments) for this
+		/// route handler.
+		/// </summary>
+		public RouteTemplate Template { get; }
 
 		public MethodInfo MethodInfo { get; }
 
@@ -83,6 +86,10 @@
 
 		public IApiResult Invoke(ApiContext context, ControllerBase controller, IServiceProvider services)
 		{
+			// Route was already matched by the RouteSelector (via GetRank), so this should always
+			// succeed; TryMatchSegments is re-run here (stateless) to extract the placeholder values.
+			TryMatchSegments(context.Request.Route, out _, out var routeValues);
+
 			var parameters = new object[MethodParameters.Length];
 			for (int i = 0; i < MethodParameters.Length; i++)
 			{
@@ -121,10 +128,26 @@
 					continue;
 				}
 
+				var fromRouteAttribute = param.GetCustomAttribute<FromRouteAttribute>();
+				if (fromRouteAttribute is not null)
+				{
+					var routeName = String.IsNullOrEmpty(fromRouteAttribute.Name) ? param.Name : fromRouteAttribute.Name;
+					parameters[i] = HandleRouteParam(context, param, routeName, routeValues);
+					continue;
+				}
+
+				// Implicit binding: an unattributed parameter whose name matches a placeholder.
+				if (routeValues.ContainsKey(param.Name))
+				{
+					parameters[i] = HandleRouteParam(context, param, param.Name, routeValues);
+					continue;
+				}
+
 				var fromQueryAttribute = param.GetCustomAttribute<FromQueryAttribute>();
 				if (fromQueryAttribute is not null)
 				{
-					parameters[i] = HandleQueryParam(context, param);
+					var queryName = String.IsNullOrEmpty(fromQueryAttribute.Name) ? param.Name : fromQueryAttribute.Name;
+					parameters[i] = HandleQueryParam(context, param, queryName);
 					continue;
 				}
 
@@ -138,7 +161,7 @@
 
 				// TODO: if we still didn't find a match perhaps we should throw?
 				// For now default to query parameter handling
-				parameters[i] = HandleQueryParam(context, param);
+				parameters[i] = HandleQueryParam(context, param, param.Name);
 				continue;
 			}
 
@@ -148,14 +171,9 @@
 
 		public int GetRank(ApiContext context)
 		{
-			if (String.IsNullOrEmpty(Route))
+			if (Template.Segments.Count == 0 && String.IsNullOrEmpty(Template.Raw))
 			{
 				return -1; // No route defined on controller
-			}
-
-			if (context.Request.Route.Trim('/') != Route.Trim('/'))
-			{
-				return -1; // Route doesn't match
 			}
 
 			if (context.Request.RequestMethod != HttpMethod)
@@ -163,7 +181,15 @@
 				return -1; // HTTP method doesn't match
 			}
 
-			var score = 0;
+			if (!TryMatchSegments(context.Request.Route, out var literalMatches, out var routeValues))
+			{
+				return -1; // Route doesn't match (different segment count, or a literal segment mismatch)
+			}
+
+			// Literal segment matches must always outrank placeholder segment matches for the same
+			// request (e.g. "items/count" beats "items/{id}"), regardless of query/body scoring
+			// below, so they're weighted far above the maximum plausible query/body score.
+			var score = literalMatches * 100;
 
 			var hasBodyParam = MethodParameters.Any(p => p.GetCustomAttribute<FromBodyAttribute>() is not null);
 			if (!hasBodyParam &&
@@ -185,7 +211,30 @@
 					continue;
 				}
 
-				if (context.Request.QueryParameters?.ContainsKey(p.Name) ?? false)
+				var fromRouteAttribute = p.GetCustomAttribute<FromRouteAttribute>();
+				if (fromRouteAttribute is not null)
+				{
+					var routeName = String.IsNullOrEmpty(fromRouteAttribute.Name) ? p.Name : fromRouteAttribute.Name;
+					if (!routeValues.ContainsKey(routeName))
+					{
+						return -1; // Explicit [FromRoute] references a placeholder that isn't in this template
+					}
+
+					score += 2;
+					continue;
+				}
+
+				// Implicit binding: an unattributed parameter whose name matches a placeholder.
+				if (routeValues.ContainsKey(p.Name))
+				{
+					score += 2;
+					continue;
+				}
+
+				var fromQueryAttribute = p.GetCustomAttribute<FromQueryAttribute>();
+				var queryName = fromQueryAttribute is not null && !String.IsNullOrEmpty(fromQueryAttribute.Name) ? fromQueryAttribute.Name : p.Name;
+
+				if (context.Request.QueryParameters?.ContainsKey(queryName) ?? false)
 				{
 					score += 2; // Exact matches are preferred
 				}
@@ -201,6 +250,59 @@
 
 			return score;
 		}
+
+		/// <summary>
+		/// Attempts to match <paramref name="requestRoute"/> against <see cref="Template"/>
+		/// segment-by-segment. Literal segments must match exactly; placeholder segments match any
+		/// value and are captured into <paramref name="routeValues"/> by placeholder name.
+		/// </summary>
+		private bool TryMatchSegments(string requestRoute, out int literalMatches, out IReadOnlyDictionary<string, string> routeValues)
+		{
+			var requestSegments = SplitSegments(requestRoute);
+			var templateSegments = Template.Segments;
+
+			if (requestSegments.Length != templateSegments.Count)
+			{
+				literalMatches = 0;
+				routeValues = EmptyRouteValues;
+				return false;
+			}
+
+			var values = new Dictionary<string, string>();
+			var literalCount = 0;
+			for (int i = 0; i < templateSegments.Count; i++)
+			{
+				var templateSegment = templateSegments[i];
+				var requestSegment = requestSegments[i];
+
+				if (templateSegment.IsPlaceholder)
+				{
+					values[templateSegment.Value] = requestSegment;
+					continue;
+				}
+
+				if (!String.Equals(templateSegment.Value, requestSegment, StringComparison.Ordinal))
+				{
+					literalMatches = 0;
+					routeValues = EmptyRouteValues;
+					return false;
+				}
+
+				literalCount++;
+			}
+
+			literalMatches = literalCount;
+			routeValues = values;
+			return true;
+		}
+
+		private static string[] SplitSegments(string route)
+		{
+			var trimmed = route?.Trim('/') ?? String.Empty;
+			return String.IsNullOrEmpty(trimmed) ? Array.Empty<string>() : trimmed.Split('/');
+		}
+
+		private static readonly IReadOnlyDictionary<string, string> EmptyRouteValues = new Dictionary<string, string>();
 
 		private static object HandleBodyParam(ApiContext context, ParameterInfo param)
 		{
@@ -227,9 +329,29 @@
 			throw new InvalidParameterException(context, param.Name, context.Request.RawBody, param.ParameterType);
 		}
 
-		private static object HandleQueryParam(ApiContext context, ParameterInfo param)
+		private static object HandleRouteParam(ApiContext context, ParameterInfo param, string routeName, IReadOnlyDictionary<string, string> routeValues)
 		{
-			if (context.Request.QueryParameters.TryGetValue(param.Name, out var value))
+			if (!routeValues.TryGetValue(routeName, out var value))
+			{
+				throw new InvalidOperationException($"Could not find a route value for parameter '{param.Name}' (expected placeholder '{routeName}').");
+			}
+
+			if (param.ParameterType == typeof(string))
+			{
+				return value;
+			}
+
+			if (!StringValueConverter.TryConvert(value, param.ParameterType, out var converted))
+			{
+				throw new InvalidParameterException(context, param.Name, value, param.ParameterType);
+			}
+
+			return converted!;
+		}
+
+		private static object HandleQueryParam(ApiContext context, ParameterInfo param, string queryName)
+		{
+			if (context.Request.QueryParameters.TryGetValue(queryName, out var value))
 			{
 				if (param.ParameterType == typeof(string))
 				{

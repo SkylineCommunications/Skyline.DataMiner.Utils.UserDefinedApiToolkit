@@ -32,6 +32,7 @@
 		/// <param name="projectName">Used as the OpenAPI document title.</param>
 		/// <param name="projectVersion">Used as the OpenAPI document version.</param>
 		/// <param name="log">Optional callback used to report progress/diagnostics.</param>
+		/// <returns>The generated <see cref="OpenApiDocument"/> for the assembly's user-defined API controllers.</returns>
 		public static OpenApiDocument CreateDocument(
 			string targetPath,
 			IEnumerable<string> references,

@@ -90,5 +90,31 @@
 
 			operation.Tags.Should().ContainSingle();
 		}
+
+		[TestMethod]
+		public void TryGetOperations_ImplicitRouteParameter_DetectsPathParameterWithoutFromRouteAttribute()
+		{
+			var provider = CreateProvider();
+			var unit = new ControllerUnit(typeof(TestFiles.PathVariableController), null);
+			var method = typeof(TestFiles.PathVariableController).GetMethod(nameof(TestFiles.PathVariableController.GetById));
+
+			var success = provider.TryGetOperations(unit, method!, out _, out var operation);
+
+			success.Should().BeTrue();
+			operation.Parameters.Should().ContainSingle(p => p.Name == "id" && p.In == ParameterLocation.Path);
+		}
+
+		[TestMethod]
+		public void TryGetOperations_ExplicitFromRouteNameOverride_DetectsPathParameterWithPlaceholderName()
+		{
+			var provider = CreateProvider();
+			var unit = new ControllerUnit(typeof(TestFiles.PathVariableController), null);
+			var method = typeof(TestFiles.PathVariableController).GetMethod(nameof(TestFiles.PathVariableController.GetDetails));
+
+			var success = provider.TryGetOperations(unit, method!, out _, out var operation);
+
+			success.Should().BeTrue();
+			operation.Parameters.Should().ContainSingle(p => p.Name == "id" && p.In == ParameterLocation.Path);
+		}
 	}
 }
