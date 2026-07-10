@@ -14,14 +14,23 @@
 	public abstract class HttpMethodAttribute : Attribute
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="HttpMethodAttribute"/> class with an optional
-		/// route template that is appended to the controller's route.
+		/// Initializes a new instance of the <see cref="HttpMethodAttribute"/> class with no extra
+		/// route segment.
+		/// </summary>
+		protected HttpMethodAttribute()
+			: this(String.Empty)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="HttpMethodAttribute"/> class with a route
+		/// template that is appended to the controller's route.
 		/// </summary>
 		/// <param name="template">
 		/// The route template to append to the controller's route, e.g. <c>"{id}"</c>. Can be
 		/// <c>null</c> or an empty string when the method contributes no extra route segment.
 		/// </param>
-		protected HttpMethodAttribute(string template = "")
+		protected HttpMethodAttribute(string template)
 		{
 			Template = template ?? String.Empty;
 		}

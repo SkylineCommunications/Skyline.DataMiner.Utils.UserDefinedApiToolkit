@@ -47,12 +47,6 @@
 				return new ParameterBinding(ParameterBindingSource.Route, routeName);
 			}
 
-			// Implicit binding: an unattributed parameter whose name matches a placeholder.
-			if (routeValues.ContainsKey(param.Name))
-			{
-				return new ParameterBinding(ParameterBindingSource.Route, param.Name);
-			}
-
 			var fromQueryAttribute = param.GetCustomAttribute<FromQueryAttribute>();
 			if (fromQueryAttribute is not null)
 			{
@@ -60,9 +54,19 @@
 				return new ParameterBinding(ParameterBindingSource.Query, queryName);
 			}
 
+			// Implicit binding: an unattributed parameter whose name matches a placeholder.
+			if (routeValues.ContainsKey(param.Name))
+			{
+				return new ParameterBinding(ParameterBindingSource.Route, param.Name);
+			}
+
 			// Dependency injection: an unattributed, non-route-matching parameter that the DI
-			// container can resolve (e.g. a registered repository/service).
-			if (services.GetService(param.ParameterType) is not null)
+			// container can resolve (e.g. a registered repository/service). Uses
+			// IServiceProviderIsService (a lookup-only check) rather than GetService, so
+			// classification never triggers instantiation of transient/scoped services as a
+			// side effect of ranking or binding-source detection.
+			var serviceCheck = services.GetService<IServiceProviderIsService>();
+			if (serviceCheck?.IsService(param.ParameterType) == true)
 			{
 				return new ParameterBinding(ParameterBindingSource.DependencyInjection, null);
 			}

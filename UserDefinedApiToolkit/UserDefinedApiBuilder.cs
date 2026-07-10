@@ -298,7 +298,9 @@
 			{
 				var isBound = handler.MethodParameters.Any(param =>
 				{
-					if (param.GetCustomAttribute<FromBodyAttribute>() is not null)
+					if (param.GetCustomAttribute<FromBodyAttribute>() is not null
+						|| param.GetCustomAttribute<FromQueryAttribute>() is not null
+						|| ParameterBinder.IsFrameworkProvidedType(param.ParameterType))
 					{
 						return false;
 					}
@@ -310,8 +312,7 @@
 						return routeName == placeholderName;
 					}
 
-					// Implicit binding: an unattributed (or [FromQuery]-attributed) parameter whose
-					// name matches the placeholder.
+					// Implicit binding: an unattributed parameter whose name matches the placeholder.
 					return param.Name == placeholderName;
 				});
 

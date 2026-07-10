@@ -96,32 +96,37 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpDeleteAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
-        public HttpDeleteAttribute(string template = "") { }
+        public HttpDeleteAttribute() { }
+        public HttpDeleteAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpGetAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
-        public HttpGetAttribute(string template = "") { }
+        public HttpGetAttribute() { }
+        public HttpGetAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public abstract class HttpMethodAttribute : System.Attribute
     {
-        protected HttpMethodAttribute(string template = "") { }
+        protected HttpMethodAttribute() { }
+        protected HttpMethodAttribute(string template) { }
         public abstract Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
         public string Template { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpPostAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
-        public HttpPostAttribute(string template = "") { }
+        public HttpPostAttribute() { }
+        public HttpPostAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpPutAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
-        public HttpPutAttribute(string template = "") { }
+        public HttpPutAttribute() { }
+        public HttpPutAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     public interface IAccessor<T>

@@ -34,5 +34,13 @@
 		{
 			return Ok($"{id}:{searchTerm}");
 		}
+
+		// The [FromQuery] parameter's name ("id") collides with the "{id}" route placeholder,
+		// which is already route-bound via the explicit [FromRoute(Name = "id")] parameter below.
+		[HttpGet("{id}/query-conflict")]
+		public IApiResult QueryConflict([FromRoute(Name = "id")] int routeId, [FromQuery] string id)
+		{
+			return Ok($"{routeId}:{id}");
+		}
 	}
 }

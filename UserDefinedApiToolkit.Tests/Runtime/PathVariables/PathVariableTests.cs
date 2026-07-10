@@ -116,6 +116,33 @@
 		}
 
 		[TestMethod]
+		[DataRow("/v1/items/999/query-conflict?id=hello", 999, "hello")]
+		public void Get_WithFromQueryNameCollidingWithPlaceholder_BindsFromQuery(string route, int routeId, string queryId)
+		{
+			// Arrange
+			var engine = new EngineMock();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_PathVariables>()
+				.Build();
+
+			var url = Utility.ParseUrl(route);
+
+			// Act
+			var result = new ApiTriggerOutput();
+			var act = () => result = api.Run(engine, new ApiTriggerInput
+			{
+				Route = url.Path,
+				RequestMethod = RequestMethod.Get,
+				QueryParameters = new QueryParameters(url.QueryParameters),
+			});
+
+			// Assert
+			act.Should().NotThrow();
+			result.Should().NotBeNull();
+			result.ResponseBody.Should().Be(JsonConvert.SerializeObject($"{routeId}:{queryId}"));
+		}
+
+		[TestMethod]
 		[DataRow("/v1/items/not-a-number")]
 		public void Get_WithInvalidRouteParameter_ThrowsInvalidParameterException(string route)
 		{
@@ -155,6 +182,30 @@
 			// Arrange
 			var act = () => UserDefinedApi.CreateBuilder()
 				.AddController<TestFiles.Controller_PathVariables_UnmatchedFromRoute>()
+				.Build();
+
+			// Assert
+			act.Should().Throw<InvalidRouteException>();
+		}
+
+		[TestMethod]
+		public void Build_WithPlaceholderOnlyMatchedByFrameworkParam_ThrowsInvalidRouteException()
+		{
+			// Arrange
+			var act = () => UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_PathVariables_FrameworkParamNotBound>()
+				.Build();
+
+			// Assert
+			act.Should().Throw<InvalidRouteException>();
+		}
+
+		[TestMethod]
+		public void Build_WithPlaceholderOnlyMatchedByFromQueryParam_ThrowsInvalidRouteException()
+		{
+			// Arrange
+			var act = () => UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_PathVariables_FromQueryNotBound>()
 				.Build();
 
 			// Assert

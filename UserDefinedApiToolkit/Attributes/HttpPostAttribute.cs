@@ -11,11 +11,20 @@
 	public sealed class HttpPostAttribute : HttpMethodAttribute
 	{
 		/// <summary>
-		/// Initializes a new instance of the <see cref="HttpPostAttribute"/> class with an optional
-		/// route template that is appended to the controller's route.
+		/// Initializes a new instance of the <see cref="HttpPostAttribute"/> class with no extra
+		/// route segment.
+		/// </summary>
+		public HttpPostAttribute()
+			: base(String.Empty)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="HttpPostAttribute"/> class with a route
+		/// template that is appended to the controller's route.
 		/// </summary>
 		/// <param name="template">The route template to append to the controller's route, e.g. <c>"{id}"</c>.</param>
-		public HttpPostAttribute(string template = "")
+		public HttpPostAttribute(string template)
 			: base(template)
 		{
 		}
