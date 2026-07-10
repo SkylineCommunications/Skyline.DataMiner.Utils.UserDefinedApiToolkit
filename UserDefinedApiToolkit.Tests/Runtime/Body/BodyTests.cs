@@ -90,5 +90,33 @@ namespace UserDefinedApiToolkit.Tests.Runtime.Body
 			result.Should().NotBeNull();
 			result.ResponseBody.Should().Be(JsonConvert.SerializeObject(expected));
 		}
+
+		[TestMethod]
+		[DataRow("null")]
+		public void PostTest_NullJsonBody_ReferenceTypeParameter_BindsNull(string rawBody)
+		{
+			// Arrange: a JSON body of the literal "null" deserializes to a real null for a
+			// reference-type (DTO) parameter. HandleBodyParam must pass that null through to the
+			// action rather than substituting an unrelated `new object()`, which would fail
+			// reflection invocation with an argument type mismatch.
+			var engine = new EngineMock();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_Body_Widget>()
+				.Build();
+
+			// Act
+			var result = new ApiTriggerOutput();
+			var act = () => result = api.Run(engine, new ApiTriggerInput
+			{
+				Route = "/v1/body-widget",
+				RequestMethod = RequestMethod.Post,
+				RawBody = rawBody,
+			});
+
+			// Assert
+			act.Should().NotThrow();
+			result.Should().NotBeNull();
+			result.ResponseBody.Should().Be(JsonConvert.SerializeObject(true));
+		}
 	}
 }

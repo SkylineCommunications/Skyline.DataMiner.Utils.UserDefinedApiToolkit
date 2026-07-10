@@ -128,8 +128,8 @@
 		/// </summary>
 		/// <param name="context">The current API context.</param>
 		/// <param name="param">The controller action parameter to resolve.</param>
-		/// <returns>The resolved value, converted to <paramref name="param"/>'s type.</returns>
-		public static object HandleBodyParam(ApiContext context, ParameterInfo param)
+		/// <returns>The resolved value, converted to <paramref name="param"/>'s type, or <see langword="null"/> when the converted body legitimately deserializes to <see langword="null"/> for a nullable parameter type.</returns>
+		public static object? HandleBodyParam(ApiContext context, ParameterInfo param)
 		{
 			if (param.ParameterType == typeof(string))
 			{
@@ -139,7 +139,22 @@
 			var converter = context.InputConverters.Reverse().FirstOrDefault(c => c.CanConvertInput(param.ParameterType));
 			if (converter is not null)
 			{
-				return converter.ConvertInput(context.Request.RawBody, param.ParameterType) ?? new object();
+				var converted = converter.ConvertInput(context.Request.RawBody, param.ParameterType);
+				if (converted is not null)
+				{
+					return converted;
+				}
+
+				// A null conversion result is only a legitimate value for reference types and
+				// Nullable<T>; a non-nullable value type parameter can never actually receive
+				// null, so treat that as a conversion failure instead of silently passing null
+				// (which would fail with an ArgumentException during reflection invocation).
+				if (!param.ParameterType.IsValueType || Nullable.GetUnderlyingType(param.ParameterType) is not null)
+				{
+					return null;
+				}
+
+				throw new InvalidParameterException(context, param.Name, context.Request.RawBody, param.ParameterType);
 			}
 
 			// None of the registered converters can handle this type (e.g. a custom converter

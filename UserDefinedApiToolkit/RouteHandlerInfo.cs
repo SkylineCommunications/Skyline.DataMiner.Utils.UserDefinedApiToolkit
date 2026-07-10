@@ -76,7 +76,7 @@
 				parameters[i] = binding.Source switch
 				{
 					ParameterBindingSource.Framework => ParameterBinder.ResolveFrameworkParam(param, context, services),
-					ParameterBindingSource.Body => ParameterBinder.HandleBodyParam(context, param),
+					ParameterBindingSource.Body => ParameterBinder.HandleBodyParam(context, param)!,
 					ParameterBindingSource.Route => ParameterBinder.HandleRouteParam(context, param, binding.Name, routeValues),
 					ParameterBindingSource.DependencyInjection => services.GetRequiredService(param.ParameterType),
 					_ => ParameterBinder.HandleQueryParam(context, param, binding.Name),

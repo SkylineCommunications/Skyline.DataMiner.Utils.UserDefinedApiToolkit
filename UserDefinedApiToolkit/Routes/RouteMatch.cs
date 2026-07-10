@@ -1,13 +1,14 @@
 ﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Routes
 {
 	using System.Collections.Generic;
+	using System.Collections.ObjectModel;
 
 	/// <summary>
 	/// The result of matching a request route against a <see cref="RouteTemplate"/>.
 	/// </summary>
 	internal readonly struct RouteMatch
 	{
-		private static readonly IReadOnlyDictionary<string, string> EmptyRouteValues = new Dictionary<string, string>();
+		private static readonly IReadOnlyDictionary<string, string> EmptyRouteValues = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
 
 		private RouteMatch(bool isMatch, int literalMatches, IReadOnlyDictionary<string, string> routeValues)
 		{
