@@ -58,7 +58,15 @@ public class UsersController : ControllerBase
 
 	[HttpGet]
 	[Produces("application/json")]
-	public ApiResult<UserDto, string> GetById([FromQuery] int id)
+	public ApiResult<List<UserDto>, string> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+	{
+		var users = _repository.GetAll(page, pageSize);
+		return Ok(users);
+	}
+
+	[HttpGet("{id}")]
+	[Produces("application/json")]
+	public ApiResult<UserDto, string> GetById(int id)
 	{
 		var user = _repository.GetById(id);
 		return user is null ? NotFound("User not found.") : Ok(user);
