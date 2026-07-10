@@ -287,7 +287,7 @@
 					continue;
 				}
 
-				var routeName = String.IsNullOrEmpty(fromRouteAttribute.Name) ? param.Name : fromRouteAttribute.Name;
+				var routeName = String.IsNullOrEmpty(fromRouteAttribute.Name) ? param.Name ?? String.Empty : fromRouteAttribute.Name;
 				if (!placeholderNames.Contains(routeName))
 				{
 					throw new InvalidRouteException($"Parameter '{param.Name}' on '{handler.ControllerType.Name}.{handler.MethodInfo.Name}' is decorated with [FromRoute(Name = \"{routeName}\")], but the route template '{handler.Template.Raw}' does not contain a '{{{routeName}}}' placeholder.");

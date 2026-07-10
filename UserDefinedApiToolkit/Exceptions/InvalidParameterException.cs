@@ -1,6 +1,7 @@
 ﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
 {
 	using System;
+	using System.Runtime.Serialization;
 
 	/// <summary>
 	/// Thrown when a request value (e.g. a query string or route segment value) could not be
@@ -60,6 +61,25 @@
 		}
 
 		/// <summary>
+		/// Initializes a new instance of the <see cref="InvalidParameterException"/> class with
+		/// serialized data.
+		/// </summary>
+		/// <param name="info">The object that holds the serialized object data.</param>
+		/// <param name="context">The contextual information about the source or destination.</param>
+		protected InvalidParameterException(SerializationInfo info, StreamingContext context)
+			: base(info, context)
+		{
+			// ApiContext is not serializable (it wraps live request/converter state), so it can't
+			// be preserved across a serialization boundary.
+			Context = null!;
+			ParameterName = info.GetString(nameof(ParameterName)) ?? String.Empty;
+			RawValue = info.GetString(nameof(RawValue)) ?? String.Empty;
+
+			var targetTypeName = info.GetString(nameof(TargetType));
+			TargetType = targetTypeName is null ? typeof(object) : Type.GetType(targetTypeName) ?? typeof(object);
+		}
+
+		/// <summary>
 		/// Gets the context of the request that triggered the failed conversion.
 		/// </summary>
 		public ApiContext Context { get; }
@@ -78,5 +98,17 @@
 		/// Gets the parameter type the value could not be converted to.
 		/// </summary>
 		public Type TargetType { get; }
+
+		/// <inheritdoc/>
+		public override void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			base.GetObjectData(info, context);
+
+			// ApiContext is deliberately not included; it isn't serializable (see the
+			// deserialization constructor).
+			info.AddValue(nameof(ParameterName), ParameterName);
+			info.AddValue(nameof(RawValue), RawValue);
+			info.AddValue(nameof(TargetType), TargetType.AssemblyQualifiedName);
+		}
 	}
 }

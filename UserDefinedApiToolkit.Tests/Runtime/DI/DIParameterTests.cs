@@ -8,7 +8,7 @@
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
 
-	using TestFiles;
+	using UserDefinedApiToolkit.Tests.Runtime.DI.TestFiles;
 
 	[TestClass]
 	public sealed class DIParameterTests

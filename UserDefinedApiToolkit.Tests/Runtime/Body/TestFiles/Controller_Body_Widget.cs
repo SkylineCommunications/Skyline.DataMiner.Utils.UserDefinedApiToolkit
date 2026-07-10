@@ -15,6 +15,6 @@ namespace UserDefinedApiToolkit.Tests.Runtime.Body.TestFiles
 
 	public class Widget
 	{
-		public string Name { get; set; }
+		public string Name { get; set; } = string.Empty;
 	}
 }

@@ -16,7 +16,7 @@
 		// ("template = \"\"") is resolved at the caller's compile time and does not create a
 		// second, parameterless overload, so removing the explicit parameterless constructor is a
 		// binary breaking change for those already-compiled assemblies.
-		[DataTestMethod]
+		[TestMethod]
 		[DataRow(typeof(HttpGetAttribute))]
 		[DataRow(typeof(HttpPostAttribute))]
 		[DataRow(typeof(HttpPutAttribute))]

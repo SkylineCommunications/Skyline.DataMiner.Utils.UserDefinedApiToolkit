@@ -73,13 +73,15 @@
 				var param = MethodParameters[i];
 				var binding = ParameterBinder.Classify(param, routeValues, services);
 
+				// binding.Name is only ever null for the Framework/DependencyInjection sources
+				// (see ParameterBinder.Classify), so the null-forgiving operator below is safe.
 				parameters[i] = binding.Source switch
 				{
 					ParameterBindingSource.Framework => ParameterBinder.ResolveFrameworkParam(param, context, services),
 					ParameterBindingSource.Body => ParameterBinder.HandleBodyParam(context, param)!,
-					ParameterBindingSource.Route => ParameterBinder.HandleRouteParam(context, param, binding.Name, routeValues),
+					ParameterBindingSource.Route => ParameterBinder.HandleRouteParam(context, param, binding.Name!, routeValues),
 					ParameterBindingSource.DependencyInjection => services.GetRequiredService(param.ParameterType),
-					_ => ParameterBinder.HandleQueryParam(context, param, binding.Name),
+					_ => ParameterBinder.HandleQueryParam(context, param, binding.Name!),
 				};
 			}
 
@@ -140,7 +142,9 @@
 						break;
 
 					case ParameterBindingSource.Route:
-						if (!routeValues.ContainsKey(binding.Name))
+						// binding.Name is guaranteed non-null for the Route source (see
+						// ParameterBinder.Classify).
+						if (!routeValues.ContainsKey(binding.Name!))
 						{
 							return -1; // Explicit [FromRoute] references a placeholder that isn't in this template
 						}
@@ -154,7 +158,9 @@
 
 					case ParameterBindingSource.Query:
 					default:
-						if (context.Request.QueryParameters?.ContainsKey(binding.Name) ?? false)
+						// binding.Name is guaranteed non-null for the Query source (see
+						// ParameterBinder.Classify).
+						if (context.Request.QueryParameters?.ContainsKey(binding.Name!) ?? false)
 						{
 							score += 2; // Exact matches are preferred
 						}

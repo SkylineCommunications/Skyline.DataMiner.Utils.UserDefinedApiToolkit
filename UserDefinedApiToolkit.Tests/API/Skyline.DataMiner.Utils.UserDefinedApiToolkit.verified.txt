@@ -245,6 +245,7 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
     [System.Serializable]
     public class InvalidParameterException : System.Exception
     {
+        protected InvalidParameterException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType) { }
         public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType, string message) { }
         public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType, string message, System.Exception innerException) { }
@@ -252,6 +253,7 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
         public string ParameterName { get; }
         public string RawValue { get; }
         public System.Type TargetType { get; }
+        public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
     }
     [System.Serializable]
     public class InvalidRouteException : System.Exception

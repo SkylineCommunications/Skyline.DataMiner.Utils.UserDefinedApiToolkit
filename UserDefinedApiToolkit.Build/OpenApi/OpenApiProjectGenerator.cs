@@ -9,6 +9,8 @@
 
 	using Microsoft.OpenApi;
 
+	using Skyline.DataMiner.Utils.SecureCoding.SecureIO;
+
 	/// <summary>
 	/// Builds an <see cref="OpenApiDocument"/> for a compiled user-defined API assembly and
 	/// formats it as JSON or YAML.
@@ -89,7 +91,7 @@
 
 		private static XDocument? LoadXmlDocs(string? documentationFile)
 		{
-			if (String.IsNullOrEmpty(documentationFile) || !File.Exists(documentationFile))
+			if (String.IsNullOrEmpty(documentationFile) || !documentationFile.IsPathValid() || !File.Exists(documentationFile))
 			{
 				return null;
 			}
