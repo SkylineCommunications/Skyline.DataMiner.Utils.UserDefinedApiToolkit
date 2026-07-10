@@ -211,5 +211,17 @@
 			// Assert
 			act.Should().Throw<InvalidRouteException>();
 		}
+
+		[TestMethod]
+		public void Build_WithDuplicatePlaceholderNames_ThrowsInvalidRouteException()
+		{
+			// Arrange
+			var act = () => UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_PathVariables_DuplicatePlaceholder>()
+				.Build();
+
+			// Assert
+			act.Should().Throw<InvalidRouteException>();
+		}
 	}
 }

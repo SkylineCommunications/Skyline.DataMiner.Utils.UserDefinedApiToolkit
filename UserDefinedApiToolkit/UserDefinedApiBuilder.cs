@@ -277,6 +277,14 @@
 
 		private static void ValidateRouteParameters(RouteHandlerInfo handler)
 		{
+			var duplicatePlaceholderName = handler.Template.PlaceholderNames
+				.GroupBy(name => name, StringComparer.Ordinal)
+				.FirstOrDefault(group => group.Count() > 1)?.Key;
+			if (duplicatePlaceholderName is not null)
+			{
+				throw new InvalidRouteException($"Route template '{handler.Template.Raw}' on '{handler.ControllerType.Name}.{handler.MethodInfo.Name}' contains the '{{{duplicatePlaceholderName}}}' placeholder more than once, which would cause ambiguous binding.");
+			}
+
 			var placeholderNames = new HashSet<string>(handler.Template.PlaceholderNames, StringComparer.Ordinal);
 
 			foreach (var param in handler.MethodParameters)
