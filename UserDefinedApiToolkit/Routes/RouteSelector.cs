@@ -17,6 +17,11 @@
 
 		public RouteHandlerInfo SelectRoute(ApiContext context, IServiceProvider services)
 		{
+			if (services is null)
+			{
+				throw new ArgumentNullException(nameof(services));
+			}
+
 			var potential = _routes
 				.Select(route => new { Route = route, Rank = route.GetRank(context, services) })
 				.Where(a => a.Rank >= 0)

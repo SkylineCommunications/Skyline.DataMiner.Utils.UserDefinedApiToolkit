@@ -223,5 +223,18 @@
 			// Assert
 			act.Should().Throw<InvalidRouteException>();
 		}
+
+		[TestMethod]
+		public void Build_WithParameterDecoratedByBothFromRouteAndFromQuery_DoesNotThrow()
+		{
+			// Arrange
+			var act = () => UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_PathVariables_FromRouteAndFromQuery>()
+				.Build();
+
+			// Assert: ParameterBinder.Classify checks [FromRoute] before [FromQuery], so this
+			// parameter is route-bound at runtime and Build() must not reject it.
+			act.Should().NotThrow();
+		}
 	}
 }
