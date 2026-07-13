@@ -16,7 +16,6 @@
 
 		public void HandleController(OpenApiDocument doc, ControllerUnit unit, IBuildLogger? log = null)
 		{
-			var pathItem = new OpenApiPathItem();
 			foreach (var method in unit.ControllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
 			{
 				if (!_operationProvider.TryGetOperations(unit, method, out var httpMethod, out var operation))
@@ -24,27 +23,17 @@
 					continue;
 				}
 
-				log?.Log(BuildLogLevel.Detail, $"Registering {httpMethod.Method} /{unit.GetRoute().Trim('/')} → {unit.ControllerType.Name}.{method.Name}");
+				var path = $"/{unit.GetRoute(method).Trim('/')}";
+
+				log?.Log(BuildLogLevel.Detail, $"Registering {httpMethod.Method} {path} → {unit.ControllerType.Name}.{method.Name}");
+
+				if (!doc.Paths.TryGetValue(path, out var existingPathItem) || existingPathItem is not OpenApiPathItem pathItem)
+				{
+					pathItem = new OpenApiPathItem();
+					doc.Paths[path] = pathItem;
+				}
 
 				pathItem.AddOperation(httpMethod, operation);
-			}
-
-			if (pathItem.Operations is null || pathItem.Operations.Count == 0)
-			{
-				return;
-			}
-
-			var path = $"/{unit.GetRoute().Trim('/')}";
-			if (doc.Paths.ContainsKey(path))
-			{
-				foreach (var operation in pathItem.Operations)
-				{
-					doc.Paths[path].Operations![operation.Key] = operation.Value;
-				}
-			}
-			else
-			{
-				doc.Paths.Add(path, pathItem);
 			}
 		}
 	}

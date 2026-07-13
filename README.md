@@ -58,7 +58,15 @@ public class UsersController : ControllerBase
 
 	[HttpGet]
 	[Produces("application/json")]
-	public ApiResult<UserDto, string> GetById([FromQuery] int id)
+	public ApiResult<List<UserDto>, string> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+	{
+		var users = _repository.GetAll(page, pageSize);
+		return Ok(users);
+	}
+
+	[HttpGet("{id}")]
+	[Produces("application/json")]
+	public ApiResult<UserDto, string> GetById(int id)
 	{
 		var user = _repository.GetById(id);
 		return user is null ? NotFound("User not found.") : Ok(user);
@@ -95,8 +103,8 @@ dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 
 | Feature | Description |
 | --- | --- |
-| **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]` |
-| **Parameter binding** | `[FromQuery]` and `[FromBody]` |
+| **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]`, path variables (`{id}`) |
+| **Parameter binding** | `[FromRoute]`, `[FromQuery]` and `[FromBody]` |
 | **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
 | **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
 | **OpenAPI generation** | Generates an OpenAPI 3.0 spec from your controllers at build time |
@@ -113,6 +121,53 @@ Add the following to your API project's `.csproj` to generate an `openapi.yaml` 
 ```
 
 The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions.
+
+### Path variables
+
+Route templates support ASP.NET-Core-style `{placeholder}` segments on the `[HttpGet]`/`[HttpPost]`/
+`[HttpPut]`/`[HttpDelete]` attributes. The method-level template is appended to the controller's
+`[Route]` template to form the full route (e.g. `"v1/items"` + `"{id}"` → `"v1/items/{id}"`).
+
+A parameter binds from a placeholder either **implicitly** (its name matches the placeholder) or
+**explicitly** via `[FromRoute]` (with an optional `Name` override when the C# parameter name
+differs from the placeholder name):
+
+```csharp
+[ApiController]
+[Route("v1/items")]
+public class ItemsController : ControllerBase
+{
+	// Implicit binding: the "id" parameter name matches the "{id}" placeholder.
+	[HttpGet("{id}")]
+	public IApiResult GetById(int id)
+	{
+		return Ok(id);
+	}
+
+	// Explicit [FromRoute(Name = ...)] override: the C# parameter name ("itemId") differs
+	// from the placeholder name ("id") in the route template.
+	[HttpGet("{id}/details")]
+	public IApiResult GetDetails([FromRoute(Name = "id")] int itemId)
+	{
+		return Ok(itemId);
+	}
+}
+```
+
+A literal route segment always outranks a placeholder segment for the same request (e.g. a request
+to `v1/items/count` matches a literal `[HttpGet("count")]` action over `[HttpGet("{id}")]`).
+
+Route parameter values are converted using the same conversion logic as `[FromQuery]` parameters,
+so `InvalidParameterException` is thrown if a route value can't be converted to the parameter's
+type. Every placeholder must have a matching bound parameter (implicit or `[FromRoute]`), and every
+`[FromRoute]` parameter must reference a placeholder that actually exists in the combined route
+template — mismatches throw `InvalidRouteException` eagerly, at `Build()` time.
+
+`[FromQuery]` also supports a `Name` override (e.g. `[FromQuery(Name = "q")]`), for the same
+use case with query string parameters.
+
+Route constraints (e.g. `{id:int}`) and catch-all/wildcard segments (e.g. `{*path}`) are not
+supported.
 
 ### Access API Context
 

@@ -43,7 +43,9 @@
 
 			var docs = GetMethodDocs(unit, method);
 			operation.Responses = GetResponses(method, docs, producesTypes);
-			operation.Parameters = GetParameters(method, docs);
+
+			var routePlaceholders = TypeHelper.GetRoutePlaceholders(unit.GetRoute(method));
+			operation.Parameters = GetParameters(method, docs, routePlaceholders);
 			operation.RequestBody = GetRequestBody(method, consumesTypes);
 
 			if (!String.IsNullOrEmpty(docs?.Summary))
@@ -137,7 +139,7 @@
 			responses[statusCode.ToString()] = response;
 		}
 
-		private IList<IOpenApiParameter>? GetParameters(MethodInfo method, MethodDocs? docs)
+		private IList<IOpenApiParameter>? GetParameters(MethodInfo method, MethodDocs? docs, IReadOnlyCollection<string> routePlaceholders)
 		{
 			var parameters = new List<IOpenApiParameter>();
 
@@ -149,9 +151,9 @@
 					continue;
 				}
 
-				// Only include parameters with an explicit From* attribute
-				// (skips framework-injected params like IEngine, ApiContext)
-				var location = GetParameterLocation(param);
+				// Only include parameters with an explicit From* attribute, or an implicit
+				// (unattributed) match against a route template placeholder.
+				var (location, name) = GetParameterLocationAndName(param, routePlaceholders);
 				if (location is null)
 				{
 					continue;
@@ -159,7 +161,7 @@
 
 				var openApiParam = new OpenApiParameter
 				{
-					Name = param.Name,
+					Name = name,
 					In = location,
 					Required = !param.HasDefaultValue,
 					Schema = _components.GetOrRegisterSchema(param.ParameterType),
@@ -176,19 +178,29 @@
 			return parameters.Count > 0 ? parameters : null;
 		}
 
-		private ParameterLocation? GetParameterLocation(ParameterInfo param)
+		private (ParameterLocation? Location, string Name) GetParameterLocationAndName(ParameterInfo param, IReadOnlyCollection<string> routePlaceholders)
 		{
 			foreach (var attr in param.GetCustomAttributesData())
 			{
 				switch (TypeHelper.GetAttributeName(attr))
 				{
-					case "FromQueryAttribute": return ParameterLocation.Query;
-					case "FromHeaderAttribute": return ParameterLocation.Header;
-					case "FromRouteAttribute": return ParameterLocation.Path;
+					case "FromQueryAttribute":
+						return (ParameterLocation.Query, TypeHelper.GetNamedArgumentValue(attr, "Name") ?? param.Name!);
+					case "FromHeaderAttribute":
+						return (ParameterLocation.Header, param.Name!);
+					case "FromRouteAttribute":
+						return (ParameterLocation.Path, TypeHelper.GetNamedArgumentValue(attr, "Name") ?? param.Name!);
 				}
 			}
 
-			return null;
+			// Implicit binding: an unattributed parameter whose name matches a route template
+			// placeholder is a path parameter, same as the runtime's implicit binding behavior.
+			if (routePlaceholders.Contains(param.Name!))
+			{
+				return (ParameterLocation.Path, param.Name!);
+			}
+
+			return (null, param.Name!);
 		}
 
 		private IOpenApiRequestBody? GetRequestBody(MethodInfo method, IReadOnlyList<string> contentTypes)

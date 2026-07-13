@@ -15,10 +15,15 @@
 			_routes = routes ?? throw new ArgumentNullException(nameof(routes));
 		}
 
-		public RouteHandlerInfo SelectRoute(ApiContext context)
+		public RouteHandlerInfo SelectRoute(ApiContext context, IServiceProvider services)
 		{
+			if (services is null)
+			{
+				throw new ArgumentNullException(nameof(services));
+			}
+
 			var potential = _routes
-				.Select(route => new { Route = route, Rank = route.GetRank(context) })
+				.Select(route => new { Route = route, Rank = route.GetRank(context, services) })
 				.Where(a => a.Rank >= 0)
 				.GroupBy(a => a.Rank)
 				.OrderByDescending(a => a.Key)

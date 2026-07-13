@@ -9,6 +9,8 @@
 
 	using Microsoft.OpenApi;
 
+	using Skyline.DataMiner.Utils.SecureCoding.SecureIO;
+
 	/// <summary>
 	/// Builds an <see cref="OpenApiDocument"/> for a compiled user-defined API assembly and
 	/// formats it as JSON or YAML.
@@ -32,6 +34,7 @@
 		/// <param name="projectName">Used as the OpenAPI document title.</param>
 		/// <param name="projectVersion">Used as the OpenAPI document version.</param>
 		/// <param name="log">Optional callback used to report progress/diagnostics.</param>
+		/// <returns>The generated <see cref="OpenApiDocument"/> for the assembly's user-defined API controllers.</returns>
 		public static OpenApiDocument CreateDocument(
 			string targetPath,
 			IEnumerable<string> references,
@@ -88,7 +91,7 @@
 
 		private static XDocument? LoadXmlDocs(string? documentationFile)
 		{
-			if (String.IsNullOrEmpty(documentationFile) || !File.Exists(documentationFile))
+			if (String.IsNullOrEmpty(documentationFile) || !documentationFile.IsPathValid() || !File.Exists(documentationFile))
 			{
 				return null;
 			}

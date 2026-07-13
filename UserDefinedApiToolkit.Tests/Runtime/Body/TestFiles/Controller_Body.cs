@@ -1,4 +1,4 @@
-﻿namespace UserDefinedApiToolkit.Tests.Runtime.Body.TestFiles
+namespace UserDefinedApiToolkit.Tests.Runtime.Body.TestFiles
 {
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
 

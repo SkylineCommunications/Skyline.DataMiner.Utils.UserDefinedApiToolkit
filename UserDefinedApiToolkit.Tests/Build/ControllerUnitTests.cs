@@ -22,5 +22,23 @@
 
 			unit.GetRoute().Should().Be("/");
 		}
+
+		[TestMethod]
+		public void GetRoute_WithMethodTemplate_CombinesControllerAndMethodTemplate()
+		{
+			var unit = new ControllerUnit(typeof(TestFiles.PathVariableController), null);
+			var method = typeof(TestFiles.PathVariableController).GetMethod(nameof(TestFiles.PathVariableController.GetById));
+
+			unit.GetRoute(method!).Should().Be("v1/items/{id}");
+		}
+
+		[TestMethod]
+		public void GetRoute_WithoutMethodTemplate_ReturnsControllerRouteOnly()
+		{
+			var unit = new ControllerUnit(typeof(TestFiles.PathVariableController), null);
+			var method = typeof(TestFiles.PathVariableController).GetMethod(nameof(TestFiles.PathVariableController.GetAll));
+
+			unit.GetRoute(method!).Should().Be("v1/items");
+		}
 	}
 }
