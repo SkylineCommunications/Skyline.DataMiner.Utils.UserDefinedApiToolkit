@@ -52,8 +52,6 @@
 			if (TryCreateTimeSpanSchema(type, out var timeSpanSchema)) return timeSpanSchema;
 			if (TryCreateEnumSchema(type, out var enumSchema)) return enumSchema;
 			if (TryCreateSdmObjectReferenceSchema(type, out var sdmSchema)) return sdmSchema;
-			if (TryCreateIEnumerableSchema(type, out var enumerableSchema)) return enumerableSchema;
-			if (TryCreateComplexSchema(type, out var complexSchema)) return complexSchema;
 
 			return null;
 		}
@@ -117,65 +115,6 @@
 			schema = TypeHelper.HasDomStorageAttribute(referencedType)
 				? new OpenApiSchema { Type = JsonSchemaType.String, Format = "uuid" }
 				: new OpenApiSchema { Type = JsonSchemaType.String };
-
-			return true;
-		}
-
-		private static bool TryCreateIEnumerableSchema(Type type, out OpenApiSchema? schema)
-		{
-			if (type.IsArray)
-			{
-				schema = new OpenApiSchema
-				{
-					Type = JsonSchemaType.Array,
-					Items = Create(type.GetElementType()),
-				};
-				return true;
-			}
-
-			var ienumerableInterface = type.IsGenericType
-				? type.GetInterfaces()
-					  .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition().Name == "IEnumerable`1")
-				: null;
-
-			if (ienumerableInterface != null)
-			{
-				schema = new OpenApiSchema
-				{
-					Type = JsonSchemaType.Array,
-					Items = Create(ienumerableInterface.GetGenericArguments()[0]),
-				};
-				return true;
-			}
-
-			schema = null;
-			return false;
-		}
-
-		private static bool TryCreateComplexSchema(Type type, out OpenApiSchema? schema)
-		{
-			if (!type.IsClass)
-			{
-				schema = null;
-				return false;
-			}
-
-			schema = new OpenApiSchema
-			{
-				Type = JsonSchemaType.Object,
-				Properties = new Dictionary<string, IOpenApiSchema>(),
-			};
-
-			foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-			{
-				var propSchema = Create(property.PropertyType);
-				if (propSchema is null)
-				{
-					continue;
-				}
-
-				schema.Properties[property.Name] = propSchema;
-			}
 
 			return true;
 		}

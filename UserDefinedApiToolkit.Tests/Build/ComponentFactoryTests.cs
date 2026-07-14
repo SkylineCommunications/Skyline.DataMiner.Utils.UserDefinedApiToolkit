@@ -1,7 +1,6 @@
 ﻿namespace UserDefinedApiToolkit.Tests.Build
 {
 	using System;
-	using System.Collections.Generic;
 
 	using FluentAssertions;
 
@@ -66,39 +65,21 @@
 		}
 
 		[TestMethod]
-		public void Create_Array_ReturnsArraySchemaWithItemSchema()
-		{
-			var schema = ComponentFactory.Create(typeof(int[]));
-
-			schema.Should().NotBeNull();
-			schema!.Type.Should().Be(JsonSchemaType.Array);
-			schema.Items.Should().NotBeNull();
-		}
-
-		[TestMethod]
-		public void Create_GenericList_ReturnsArraySchema()
-		{
-			var schema = ComponentFactory.Create(typeof(List<string>));
-
-			schema.Should().NotBeNull();
-			schema!.Type.Should().Be(JsonSchemaType.Array);
-		}
-
-		[TestMethod]
-		public void Create_ComplexType_ReturnsObjectSchemaWithProperties()
-		{
-			var schema = ComponentFactory.Create(typeof(TestFiles.SampleDto));
-
-			schema.Should().NotBeNull();
-			schema!.Type.Should().Be(JsonSchemaType.Object);
-			schema.Properties.Should().ContainKey(nameof(TestFiles.SampleDto.Name));
-			schema.Properties.Should().ContainKey(nameof(TestFiles.SampleDto.Count));
-		}
-
-		[TestMethod]
 		public void Create_NullType_ReturnsNull()
 		{
 			ComponentFactory.Create(null).Should().BeNull();
+		}
+
+		[TestMethod]
+		public void Create_Array_ReturnsNull()
+		{
+			ComponentFactory.Create(typeof(int[])).Should().BeNull();
+		}
+
+		[TestMethod]
+		public void Create_ComplexType_ReturnsNull()
+		{
+			ComponentFactory.Create(typeof(TestFiles.SampleDto)).Should().BeNull();
 		}
 	}
 }

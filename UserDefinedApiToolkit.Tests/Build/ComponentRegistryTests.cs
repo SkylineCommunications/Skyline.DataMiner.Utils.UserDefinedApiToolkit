@@ -44,6 +44,24 @@
 
 			schema.Should().BeOfType<OpenApiSchemaReference>();
 			doc.Components!.Schemas.Should().ContainKey(nameof(TestFiles.SampleDto));
+
+			var registeredSchema = (OpenApiSchema)doc.Components!.Schemas[nameof(TestFiles.SampleDto)];
+			registeredSchema.Type.Should().Be(JsonSchemaType.Object);
+			registeredSchema.Properties.Should().ContainKey(nameof(TestFiles.SampleDto.Name));
+			registeredSchema.Properties.Should().ContainKey(nameof(TestFiles.SampleDto.Count));
+		}
+
+		[TestMethod]
+		public void GetOrRegisterSchema_Array_ReturnsArraySchemaWithItemSchema()
+		{
+			var doc = CreateDocument();
+			var registry = new ComponentRegistry(doc);
+
+			var schema = registry.GetOrRegisterSchema(typeof(int[]));
+
+			schema.Should().BeOfType<OpenApiSchema>();
+			((OpenApiSchema)schema!).Type.Should().Be(JsonSchemaType.Array);
+			((OpenApiSchema)schema!).Items.Should().NotBeNull();
 		}
 
 		[TestMethod]
@@ -78,6 +96,28 @@
 			var registry = new ComponentRegistry(doc);
 
 			registry.GetOrRegisterSchema(null!).Should().BeNull();
+		}
+
+		[TestMethod]
+		public void GetOrRegisterSchema_CircularlyReferencedComplexTypes_RegistersBothAndDoesNotOverflow()
+		{
+			var doc = CreateDocument();
+			var registry = new ComponentRegistry(doc);
+
+			var schema = registry.GetOrRegisterSchema(typeof(TestFiles.Profile));
+
+			schema.Should().BeOfType<OpenApiSchemaReference>();
+			doc.Components!.Schemas.Should().ContainKey(nameof(TestFiles.Profile));
+			doc.Components!.Schemas.Should().ContainKey(nameof(TestFiles.Parameter));
+
+			var profileSchema = (OpenApiSchema)doc.Components!.Schemas[nameof(TestFiles.Profile)];
+			var parametersArraySchema = (OpenApiSchema)profileSchema.Properties![nameof(TestFiles.Profile.Parameters)];
+			var parameterSchema = (OpenApiSchemaReference)parametersArraySchema.Items!;
+			parameterSchema.Reference.Id.Should().Be(nameof(TestFiles.Parameter));
+
+			var registeredParameterSchema = (OpenApiSchema)doc.Components!.Schemas[nameof(TestFiles.Parameter)];
+			var parentSchema = (OpenApiSchemaReference)registeredParameterSchema.Properties![nameof(TestFiles.Parameter.Parent)];
+			parentSchema.Reference.Id.Should().Be(nameof(TestFiles.Profile));
 		}
 	}
 }
