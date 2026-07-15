@@ -1,4 +1,4 @@
-﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
+﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Routes
 {
 	using System;
 	using System.Linq;
@@ -7,7 +7,6 @@
 	using Microsoft.Extensions.DependencyInjection;
 
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis;
-	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Routes;
 
 	internal class RouteHandlerInfo
 	{
