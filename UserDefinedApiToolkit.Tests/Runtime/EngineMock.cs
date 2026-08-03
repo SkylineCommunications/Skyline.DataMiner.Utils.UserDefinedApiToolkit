@@ -4,7 +4,9 @@
 	using System.Collections.Generic;
 
 	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Automation.Logging;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Automation;
 	using Skyline.DataMiner.Net.Messages;
 	using Skyline.DataMiner.Net.Messages.SLDataGateway;
 	using Skyline.DataMiner.Utils.DOM.UnitTesting;
@@ -20,6 +22,7 @@
 			_connection = new DomConnectionMock(_messageHandler);
 		}
 
+		public event EventHandler<DestroyEventArgs> OnDestroy;
 		public bool IsInteractive { get; } = false;
 		public SLTicketingGateway TicketingGateway { get; }
 		public SLProfileManager ProfileManager { get; }
@@ -29,6 +32,9 @@
 		public string UserLoginName { get; } = "UserDefinedApiToolkit.Tests";
 		public int InstanceId { get; } = 1;
 		public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(15);
+		public WebUIVersion WebUIVersion { get; set; }
+		public string ScriptName { get; }
+		public IClientInfo ClientInfo { get; }
 
 		public void AcknowledgeAlarm(AlarmTreeID alarmTreeID, string comment) => throw new NotImplementedException();
 		public void AcknowledgeAlarm(int dataMinerID, int elementID, int alarmID, string comment) => throw new NotImplementedException();
@@ -92,8 +98,10 @@
 		public void Log(string message, LogType type, int logLevel, string method) => Console.WriteLine($"Log: {message}, Type: {type}, LogLevel: {logLevel}, Method: {method}");
 		public void Log(string message, LogType type, int logLevel) => Console.WriteLine($"Log: {message}, Type: {type}, LogLevel: {logLevel}");
 		public void Log(string message) => Console.WriteLine($"Log: {message}");
+		public void Log(string message, LogType type, LogLevel logLevel, string method) => throw new NotImplementedException();
 		public MailReportOptions PrepareMailReport(string mailReport) => throw new NotImplementedException();
 		public SubScriptOptions PrepareSubScript(string scriptName) => throw new NotImplementedException();
+		public RequestScriptInfoSubScriptOptions PrepareSubScript(string scriptName, RequestScriptInfoInput input) => throw new NotImplementedException();
 		public UIResults RunClientProgram(string applicationPath, bool waitForCompletion) => throw new NotImplementedException();
 		public UIResults RunClientProgram(string applicationPath) => throw new NotImplementedException();
 		public UIResults RunClientProgram(string applicationPath, string arguments) => throw new NotImplementedException();

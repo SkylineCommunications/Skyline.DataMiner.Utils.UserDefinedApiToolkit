@@ -21,6 +21,7 @@
 		[DataRow(typeof(HttpPostAttribute))]
 		[DataRow(typeof(HttpPutAttribute))]
 		[DataRow(typeof(HttpDeleteAttribute))]
+		[DataRow(typeof(HttpPatchAttribute))]
 		public void HttpVerbAttribute_HasPublicParameterlessConstructor(Type attributeType)
 		{
 			var ctor = attributeType.GetConstructor(Type.EmptyTypes);

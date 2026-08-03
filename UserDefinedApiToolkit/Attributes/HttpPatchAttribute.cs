@@ -5,7 +5,7 @@
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis;
 
 	/// <summary>
-	/// Registers an action method as an HTTP PUT route handler.
+	/// Registers an action method as an HTTP PATCH route handler.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
 	public sealed class HttpPatchAttribute : HttpMethodAttribute

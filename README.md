@@ -103,7 +103,7 @@ dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 
 | Feature | Description |
 | --- | --- |
-| **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]`, path variables (`{id}`) |
+| **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpPatch]`/`[HttpDelete]`, path variables (`{id}`) |
 | **Parameter binding** | `[FromRoute]`, `[FromQuery]` and `[FromBody]` |
 | **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
 | **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
@@ -125,7 +125,7 @@ The generated document includes every controller's routes, HTTP methods, request
 ### Path variables
 
 Route templates support ASP.NET-Core-style `{placeholder}` segments on the `[HttpGet]`/`[HttpPost]`/
-`[HttpPut]`/`[HttpDelete]` attributes. The method-level template is appended to the controller's
+`[HttpPut]`/`[HttpPatch]`/`[HttpDelete]` attributes. The method-level template is appended to the controller's
 `[Route]` template to form the full route (e.g. `"v1/items"` + `"{id}"` → `"v1/items/{id}"`).
 
 A parameter binds from a placeholder either **implicitly** (its name matches the placeholder) or
