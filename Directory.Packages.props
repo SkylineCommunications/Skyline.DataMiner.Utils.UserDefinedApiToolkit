@@ -9,7 +9,7 @@
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
 		<PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-		<PackageVersion Include="Skyline.DataMiner.Dev.Automation" Version="10.4.1.3" />
+		<PackageVersion Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
 		<PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding" Version="2.2.3" />
 		<!--Build-->
 		<PackageVersion Include="Microsoft.OpenApi" Version="3.9.0" />

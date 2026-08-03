@@ -7,8 +7,8 @@
 	/// <summary>
 	/// Base class for the HTTP method attributes (<see cref="HttpGetAttribute"/>,
 	/// <see cref="HttpPostAttribute"/>, <see cref="HttpPutAttribute"/>,
-	/// <see cref="HttpDeleteAttribute"/>) applied to controller action methods to register them as
-	/// route handlers for a specific <see cref="RequestMethod"/>.
+	/// <see cref="HttpPatchAttribute"/>, <see cref="HttpDeleteAttribute"/>) applied to controller
+	/// action methods to register them as route handlers for a specific <see cref="RequestMethod"/>.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
 	public abstract class HttpMethodAttribute : Attribute

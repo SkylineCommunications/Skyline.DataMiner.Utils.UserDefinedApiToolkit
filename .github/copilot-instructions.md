@@ -4,7 +4,7 @@
 
 A DataMiner SDK (`Skyline.DataMiner.Utils.UserDefinedApiToolkit`) that lets DataMiner Automation
 scripts implement REST APIs using an ASP.NET-Core-like, attribute/controller-based model
-(`[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]` with optional
+(`[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpPatch]`/`[HttpDelete]` with optional
 `{placeholder}` path variable templates, `[FromRoute]`, `[FromBody]`, `[FromQuery]`). See
 `README.md` for the end-user API and usage examples — read it before changing public-facing
 behavior (attributes, builder methods, return helpers).

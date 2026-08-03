@@ -116,6 +116,13 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
         public string Template { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
+    public sealed class HttpPatchAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
+    {
+        public HttpPatchAttribute() { }
+        public HttpPatchAttribute(string template) { }
+        public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpPostAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
         public HttpPostAttribute() { }

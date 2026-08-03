@@ -36,5 +36,11 @@
 		{
 			return Ok();
 		}
+
+		[HttpPatch]
+		public ApiResult<SampleDto, string> Patch([FromBody] SampleDto dto)
+		{
+			return Ok(dto);
+		}
 	}
 }

@@ -68,6 +68,19 @@
 		}
 
 		[TestMethod]
+		public void TryGetOperations_HttpPatchMethod_DetectsPatchHttpMethod()
+		{
+			var provider = CreateProvider();
+			var unit = new ControllerUnit(typeof(TestFiles.SampleController), null);
+			var method = typeof(TestFiles.SampleController).GetMethod(nameof(TestFiles.SampleController.Patch));
+
+			var success = provider.TryGetOperations(unit, method!, out var httpMethod, out _);
+
+			success.Should().BeTrue();
+			httpMethod.Should().Be(new HttpMethod("PATCH"));
+		}
+
+		[TestMethod]
 		public void TryGetOperations_MethodWithoutHttpAttribute_ReturnsFalse()
 		{
 			var provider = CreateProvider();
