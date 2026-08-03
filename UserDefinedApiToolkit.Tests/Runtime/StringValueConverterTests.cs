@@ -51,6 +51,8 @@
 		[TestMethod]
 		[DataRow("true", true)]
 		[DataRow("false", false)]
+		[DataRow("False", false)]
+		[DataRow("True", true)]
 		public void TryConvert_ValidBool_ReturnsConvertedValue(string rawValue, bool expected)
 		{
 			// Act

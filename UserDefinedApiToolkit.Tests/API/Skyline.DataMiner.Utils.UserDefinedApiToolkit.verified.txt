@@ -1,4 +1,4 @@
-﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiTo" +
+[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiTo" +
     "olkit")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("UserDefinedApiToolkit.Tests")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName=".NET Framework 4.8")]
@@ -85,35 +85,48 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
     public sealed class FromQueryAttribute : System.Attribute
     {
         public FromQueryAttribute() { }
+        public string? Name { get; set; }
+    }
+    [System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false, Inherited=true)]
+    public sealed class FromRouteAttribute : System.Attribute
+    {
+        public FromRouteAttribute() { }
+        public string? Name { get; set; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpDeleteAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
         public HttpDeleteAttribute() { }
+        public HttpDeleteAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpGetAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
         public HttpGetAttribute() { }
+        public HttpGetAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public abstract class HttpMethodAttribute : System.Attribute
     {
         protected HttpMethodAttribute() { }
+        protected HttpMethodAttribute(string template) { }
         public abstract Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
+        public string Template { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpPostAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
         public HttpPostAttribute() { }
+        public HttpPostAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public sealed class HttpPutAttribute : Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
     {
         public HttpPutAttribute() { }
+        public HttpPutAttribute(string template) { }
         public override Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod HttpMethod { get; }
     }
     public interface IAccessor<T>
@@ -232,6 +245,7 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
     [System.Serializable]
     public class InvalidParameterException : System.Exception
     {
+        protected InvalidParameterException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
         public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType) { }
         public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType, string message) { }
         public InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext context, string parameterName, string rawValue, System.Type targetType, string message, System.Exception innerException) { }
@@ -239,6 +253,15 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions
         public string ParameterName { get; }
         public string RawValue { get; }
         public System.Type TargetType { get; }
+        public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
+    }
+    [System.Serializable]
+    public class InvalidRouteException : System.Exception
+    {
+        public InvalidRouteException() { }
+        public InvalidRouteException(string message) { }
+        protected InvalidRouteException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
+        public InvalidRouteException(string message, System.Exception innerException) { }
     }
     [System.Serializable]
     public class NoRouteException : System.Exception
