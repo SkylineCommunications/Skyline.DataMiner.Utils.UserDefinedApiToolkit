@@ -22,7 +22,7 @@
 		<PackageVersion Include="FluentAssertions" Version="7.2.2" />
 		<PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
 		<PackageVersion Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
-		<PackageVersion Include="Verify.MSTest" Version="31.27.0" />
+		<PackageVersion Include="Verify.MSTest" Version="31.28.0" />
 		<!--Analyzers-->
 		<PackageVersion Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2" />
 		<PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="2.2.3" />
