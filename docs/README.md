@@ -274,25 +274,31 @@ OpenAPI; they do not change runtime serialization or request handling.
 
 ## Installer file generation
 
-The package generates the JSON metadata file used to install a User-Defined API when the consuming
-project declares an `UdapiPackage` item. The output is named after the project, for example
-`OrdersApi.udapi.json`, and is written to the project's build output directory. It is then copied
-automatically to the `SetupContent/UDAPI` folder of the configured DataMiner install project:
+The installer package generates the JSON metadata files used to install User-Defined APIs. Add the
+installer package to the central DataMiner package project and list the UDAPI projects that should
+be built and included:
 
 ```xml
 <ItemGroup>
-	<UdapiPackage Include="..\UdapiInstallerProject" />
+	<UdapiProject Include="..\Orders API\Orders API.csproj" />
+	<UdapiProject Include="..\Users API\Users API.csproj" />
 </ItemGroup>
 ```
 
-`UdapiPackage` must be declared inside an `<ItemGroup>`. The `Include` value is the item's
-install project root.
+The installer package builds each listed project before the package project, generates a metadata
+file named after each project (for example, `OrdersApi.udapi.json`), and copies the files to the
+package project's `SetupContent/UDAPI` directory. Independent projects are built in parallel.
+`UdapiProject` uses standard MSBuild item syntax, so projects can also be selected with wildcards:
 
-The copy runs after installer-file generation and preserves the generated filename. Multiple
-`UdapiPackage` items can be used when the same file must be copied to more than one install
-project. Relative `Include` paths are resolved against the consuming project directory, while
-absolute Windows or UNC paths are also supported. The `SetupContent/UDAPI` folder is created
-automatically if needed.
+```xml
+<ItemGroup>
+	<UdapiProject Include="..\Apis\**\*.csproj"
+				 Exclude="..\Apis\UdapiInstaller\**\*" />
+</ItemGroup>
+```
+
+All matched projects are built and must be UDAPI projects. Exclude the central package project if
+it is within the wildcard scope.
 
 ## Troubleshooting
 

@@ -27,8 +27,17 @@
 			_targetPath = targetPath ?? throw new ArgumentNullException(nameof(targetPath));
 			_references = references?.ToArray() ?? throw new ArgumentNullException(nameof(references));
 
-			var allPaths = references.Append(targetPath);
-			var resolver = new PathAssemblyResolver(allPaths);
+			var allPaths = _references.Append(targetPath);
+			var coreAssemblyPath = typeof(object).Assembly.Location;
+			var coreAssemblyName = typeof(object).Assembly.GetName().Name;
+			var hasCoreAssembly = _references.Any(path =>
+				String.Equals(Path.GetFileNameWithoutExtension(path), coreAssemblyName, StringComparison.OrdinalIgnoreCase));
+			if (!hasCoreAssembly && !String.IsNullOrEmpty(coreAssemblyPath))
+			{
+				allPaths = allPaths.Append(coreAssemblyPath);
+			}
+
+			var resolver = new PathAssemblyResolver(allPaths.Distinct(StringComparer.OrdinalIgnoreCase));
 			_mlc = new MetadataLoadContext(resolver);
 
 			_documentationFile = documentationFile;

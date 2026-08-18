@@ -43,6 +43,12 @@ namespace UserDefinedApiToolkit.Tests.Build
 		{
 			var buildEngine = new BuildEngineStub();
 			var task = CreateTask(_outputPath, "Example API.udapi.json", buildEngine);
+			task.References = task.References
+				.Where(reference => !String.Equals(
+					reference.ItemSpec,
+					typeof(object).Assembly.Location,
+					StringComparison.OrdinalIgnoreCase))
+				.ToArray();
 
 			var result = task.Execute();
 
@@ -58,56 +64,71 @@ namespace UserDefinedApiToolkit.Tests.Build
 		}
 
 		[TestMethod]
-		public void ImportedTargets_UsesCentralPackageVersionAndCopiesToEveryPackage()
+		public void InstallerTargets_BuildsUdapiProjectsAndCopiesGeneratedFiles()
 		{
-			var projectDirectory = Path.Combine(_outputPath, "Consumer");
-			var relativeInstallDirectory = Path.Combine(_outputPath, "RelativeInstall");
-			var absoluteInstallDirectory = Path.Combine(_outputPath, "AbsoluteInstall");
-			var relativeInstallPath = @"..\RelativeInstall";
-			Directory.CreateDirectory(projectDirectory);
+			var packageDirectory = Path.Combine(_outputPath, "Package");
+			var packageBuildDirectory = Path.Combine(packageDirectory, "build");
+			var taskDirectory = Path.Combine(packageDirectory, "tasks", "netstandard2.0");
+			var childDirectory = Path.Combine(_outputPath, "ChildApi");
+			var childProjectPath = Path.Combine(childDirectory, "ChildApi.proj");
+			var childScriptPath = Path.ChangeExtension(childProjectPath, ".xml");
+			var centralProjectPath = Path.Combine(packageDirectory, "CentralPackage.proj");
+			var toolkitTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets");
+			var installerTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets");
 
-			var projectPath = Path.Combine(projectDirectory, "InstallerTargetTest.proj");
-			var scriptPath = Path.ChangeExtension(projectPath, ".xml");
-			File.WriteAllText(scriptPath, "<DMSScript><Name>Test Script</Name></DMSScript>");
-
-			var targetDirectory = Path.Combine(_outputPath, "package", "build");
-			var taskDirectory = Path.Combine(_outputPath, "package", "tasks", "netstandard2.0");
-			Directory.CreateDirectory(targetDirectory);
+			Directory.CreateDirectory(packageBuildDirectory);
 			Directory.CreateDirectory(taskDirectory);
+			Directory.CreateDirectory(childDirectory);
+			File.Copy(toolkitTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(toolkitTargetSource)));
+			File.Copy(installerTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)));
 
-			var targetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets");
-			File.Copy(targetSource, Path.Combine(targetDirectory, Path.GetFileName(targetSource)));
-
-			var taskAssemblyDirectory = GetBuildTaskOutputDirectory();
-			foreach (var file in Directory.GetFiles(taskAssemblyDirectory!))
+			foreach (var file in Directory.GetFiles(GetBuildTaskOutputDirectory()))
 			{
 				File.Copy(file, Path.Combine(taskDirectory, Path.GetFileName(file)));
 			}
 
 			var references = GetReferencePaths()
 				.Select(path => $"<ReferencePath Include=\"{Escape(path)}\" />");
-			var projectContent = $@"<Project ToolsVersion=""Current"">
+			File.WriteAllText(childProjectPath, $@"<Project ToolsVersion=""Current"">
 	<PropertyGroup>
-		<OutDir>{Escape(_outputPath + Path.DirectorySeparatorChar)}</OutDir>
+		<OutDir>bin\</OutDir>
 		<TargetPath>{Escape(Assembly.GetExecutingAssembly().Location)}</TargetPath>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include=""Skyline.DataMiner.Utils.UserDefinedApiToolkit"" />
 		<PackageVersion Include=""Skyline.DataMiner.Utils.UserDefinedApiToolkit"" Version=""9.8.7"" />
-		<UdapiPackage Include=""{Escape(relativeInstallPath)}"" />
-		<UdapiPackage Include=""{Escape(absoluteInstallDirectory)}"" />
 		{String.Join(Environment.NewLine, references)}
 	</ItemGroup>
-	<Target Name=""Build"" />
-	<Import Project=""{Escape(Path.Combine(targetDirectory, Path.GetFileName(targetSource)))}"" />
-</Project>";
-			File.WriteAllText(projectPath, projectContent);
+	<Target Name=""ResolveReferences"" />
+	<Target Name=""Build"">
+		<WriteLinesToFile
+			File=""{Escape(childScriptPath)}""
+			Lines=""&lt;DMSScript&gt;&lt;Name&gt;Central Test Script&lt;/Name&gt;&lt;/DMSScript&gt;""
+			Overwrite=""true"" />
+	</Target>
+	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(toolkitTargetSource)))}"" />
+</Project>");
+
+			File.WriteAllText(centralProjectPath, $@"<Project ToolsVersion=""Current"">
+	<PropertyGroup>
+		<OutDir>{Escape(Path.Combine(packageDirectory, "bin") + Path.DirectorySeparatorChar)}</OutDir>
+	</PropertyGroup>
+	<ItemGroup>
+		<UdapiProject Include=""..\ChildApi\ChildApi.proj"" />
+	</ItemGroup>
+	<Target Name=""Build"">
+		<Error
+			Condition=""!Exists('{Escape(Path.Combine(packageDirectory, "SetupContent", "UDAPI", "ChildApi.udapi.json"))}')""
+			Text=""UDAPI installer metadata was not copied before the package build."" />
+	</Target>
+	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)))}"" />
+</Project>");
 
 			var process = Process.Start(new ProcessStartInfo
 			{
 				FileName = "dotnet",
-				Arguments = $"msbuild \"{projectPath}\" /t:Build /nologo /v:minimal",
+				Arguments = $"msbuild \"{centralProjectPath}\" /t:Build /nologo /v:minimal",
 				UseShellExecute = false,
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
@@ -120,18 +141,11 @@ namespace UserDefinedApiToolkit.Tests.Build
 
 			process.ExitCode.Should().Be(0, output);
 
-			var outputFileName = "InstallerTargetTest.udapi.json";
-			var generatedFile = Path.Combine(_outputPath, outputFileName);
-			var relativeCopiedFile = Path.Combine(relativeInstallDirectory, "SetupContent", "UDAPI", outputFileName);
-			var absoluteCopiedFile = Path.Combine(absoluteInstallDirectory, "SetupContent", "UDAPI", outputFileName);
-
+			var generatedFile = Path.Combine(packageDirectory, "SetupContent", "UDAPI", "ChildApi.udapi.json");
 			File.Exists(generatedFile).Should().BeTrue();
-			File.Exists(relativeCopiedFile).Should().BeTrue();
-			File.Exists(absoluteCopiedFile).Should().BeTrue();
 			var generatedContent = File.ReadAllText(generatedFile);
 			generatedContent.Should().Contain("\"ToolkitVersion\":\"9.8.7\"");
-			generatedContent.Should().Contain("\"Route\":\"v1/installer/{id}\"");
-			generatedContent.Should().NotContain("\"Route\":\"v1/installer\"");
+			generatedContent.Should().Contain("\"ScriptName\":\"Central Test Script\"");
 		}
 
 		private static UserDefinedApiToolkitTask CreateTask(

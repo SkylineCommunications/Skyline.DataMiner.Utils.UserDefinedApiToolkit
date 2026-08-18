@@ -34,6 +34,10 @@
 		<None Include="README.md" Pack="true" PackagePath="" />
 		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
 		<None Include="nuget\Icon.png" Pack="true" PackagePath="" />
+		<None Include="build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets"
+			  Pack="true"
+			  PackagePath="build\"
+			  Visible="true" />
 	</ItemGroup>
 
 	<ItemGroup>

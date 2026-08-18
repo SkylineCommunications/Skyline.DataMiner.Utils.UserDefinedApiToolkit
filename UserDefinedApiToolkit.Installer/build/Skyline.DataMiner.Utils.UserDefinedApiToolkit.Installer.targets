@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<_UserDefinedApiToolkitInstallerPackageOutputDirectory>$(MSBuildProjectDirectory)\SetupContent\UDAPI</_UserDefinedApiToolkitInstallerPackageOutputDirectory>
+	</PropertyGroup>
+
+	<Target Name="SkylineUserDefinedApiToolkit_Installer_BuildAndCollectUdapiProjects"
+			BeforeTargets="Build"
+			Condition="'@(UdapiProject)' != ''">
+		<MSBuild
+			Projects="@(UdapiProject)"
+			Targets="Build"
+			BuildInParallel="true" />
+
+		<MSBuild
+			Projects="@(UdapiProject)"
+			Targets="SkylineUserDefinedApiToolkit_GenerateInstallerFile"
+			Properties="UserDefinedApiToolkitGenerateInstallerFile=true"
+			BuildInParallel="true">
+			<Output TaskParameter="TargetOutputs" ItemName="_UserDefinedApiToolkitInstallerFiles" />
+		</MSBuild>
+
+		<Copy
+			SourceFiles="@(_UserDefinedApiToolkitInstallerFiles)"
+			DestinationFolder="$(_UserDefinedApiToolkitInstallerPackageOutputDirectory)"
+			SkipUnchangedFiles="true" />
+	</Target>
+</Project>

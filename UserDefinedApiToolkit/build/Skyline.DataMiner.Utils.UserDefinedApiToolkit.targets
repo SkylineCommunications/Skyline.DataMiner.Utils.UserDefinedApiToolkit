@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<!--
-		Generates an OpenAPI 3.0 specification and optional installer metadata for User-Defined API
+		Generates an OpenAPI 3.0 specification and installer metadata for User-Defined API
 		projects that reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit NuGet package.
 
 		Enable it by adding the following to the consuming project's .csproj:
@@ -10,9 +10,6 @@
 			  <GenerateOpenApi>True</GenerateOpenApi>
 			  <OpenApiFormat>yaml</OpenApiFormat> (optional: "yaml", the default, or "json")
 			</PropertyGroup>
-
-		Use the UdapiPackage item to generate and copy the
-		$(MSBuildProjectName).udapi.json file to an install project.
 
 		The task assembly (and its own runtime dependencies, e.g. Microsoft.OpenApi) are bundled
 		under "tasks/netstandard2.0/" of this package rather than published as a separate NuGet
@@ -73,10 +70,16 @@
 
 	<Target Name="SkylineUserDefinedApiToolkit_GenerateInstallerFile"
 			AfterTargets="Build"
-			Condition="'@(UdapiPackage)' != ''">
+			DependsOnTargets="ResolveReferences"
+			Condition="'$(UserDefinedApiToolkitGenerateInstallerFile)' == 'true'"
+			Returns="$(_UserDefinedApiToolkitInstallerFilePath)">
 
 		<PropertyGroup Condition="'$(_UserDefinedApiToolkitVersion)' == ''">
 			<_UserDefinedApiToolkitVersion>@(PackageVersion->WithMetadataValue('Identity', 'Skyline.DataMiner.Utils.UserDefinedApiToolkit')->'%(Version)')</_UserDefinedApiToolkitVersion>
+		</PropertyGroup>
+		<PropertyGroup>
+			<_UserDefinedApiToolkitInstallerOutputDirectory>$([System.IO.Path]::GetDirectoryName('$(TargetPath)'))</_UserDefinedApiToolkitInstallerOutputDirectory>
+			<_UserDefinedApiToolkitInstallerFilePath>$([System.IO.Path]::Combine('$(_UserDefinedApiToolkitInstallerOutputDirectory)', '$(_UserDefinedApiToolkitInstallerFileName)'))</_UserDefinedApiToolkitInstallerFilePath>
 		</PropertyGroup>
 
 		<!-- The XML documentation file (if enabled) is only used to enrich the generated
@@ -90,7 +93,7 @@
 		</ItemGroup>
 
 		<UserDefinedApiToolkitTask
-			OutputPath="$(OutDir)"
+			OutputPath="$(_UserDefinedApiToolkitInstallerOutputDirectory)"
 			OutputFileName="$(_UserDefinedApiToolkitInstallerFileName)"
 			TargetPath="$(TargetPath)"
 
@@ -99,17 +102,6 @@
 
 			References="@(_UserDefinedApiReferences)"
 			DocumentationFile="$(_UserDefinedApiOpenApiDocFile)" />
-	</Target>
-
-	<Target Name="SkylineUserDefinedApiToolkit_CopyInstallerFile"
-			AfterTargets="SkylineUserDefinedApiToolkit_GenerateInstallerFile"
-			Condition="'@(UdapiPackage)' != ''">
-
-		<!-- Each UdapiPackage item supplies the install project root through its Include path. -->
-		<Copy
-			SourceFiles="$(OutDir)$(_UserDefinedApiToolkitInstallerFileName)"
-			DestinationFolder="$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '%(UdapiPackage.Identity)', 'SetupContent', 'UDAPI'))"
-			SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>
