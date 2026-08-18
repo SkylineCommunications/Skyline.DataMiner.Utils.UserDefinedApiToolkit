@@ -12,6 +12,12 @@ namespace UserDefinedApiToolkit.Tests.Build.TestFiles
 			return Ok();
 		}
 
+		[HttpPatch("{id}")]
+		public IApiResult Patch(int id)
+		{
+			return Ok();
+		}
+
 		public IApiResult HelperMethod()
 		{
 			return Ok();

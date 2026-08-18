@@ -24,9 +24,18 @@
 			};
 
 			var routes = new List<RouteInfo>();
+			var routeNames = new HashSet<string>(StringComparer.Ordinal);
 			foreach (var controller in controllers)
 			{
-				routes.AddRange(GetRoutes(controller));
+				foreach (var route in GetRoutes(controller))
+				{
+					if (route.Route is null || !routeNames.Add(route.Route))
+					{
+						continue;
+					}
+
+					routes.Add(route);
+				}
 			}
 
 			info.Routes = routes.ToArray();

@@ -11,6 +11,10 @@
 			Condition="'$(DataMinerType)' != 'Package'"
 			Text="The Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer package can only be used in a DataMiner package project with &lt;DataMinerType&gt;Package&lt;/DataMinerType&gt;." />
 
+		<ItemGroup>
+			<_UserDefinedApiToolkitExpectedProjects Include="@(UdapiProject->'%(FullPath)')" />
+		</ItemGroup>
+
 		<MSBuild
 			Projects="@(UdapiProject)"
 			Targets="SkylineUserDefinedApiToolkit_ValidateInstallerProject"
@@ -19,9 +23,14 @@
 			<Output TaskParameter="TargetOutputs" ItemName="_UserDefinedApiToolkitValidatedProjects" />
 		</MSBuild>
 
+		<ItemGroup>
+			<_UserDefinedApiToolkitInvalidProjects Include="@(_UserDefinedApiToolkitExpectedProjects)" />
+			<_UserDefinedApiToolkitInvalidProjects Remove="@(_UserDefinedApiToolkitValidatedProjects)" />
+		</ItemGroup>
+
 		<Error
-			Condition="'@(_UserDefinedApiToolkitValidatedProjects->Count())' != '@(UdapiProject->Count())'"
-			Text="Every UdapiProject must reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package. Check the configured entries: @(UdapiProject, ', ')." />
+			Condition="'@(_UserDefinedApiToolkitInvalidProjects)' != ''"
+			Text="The following UdapiProject entries do not reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package: @(_UserDefinedApiToolkitInvalidProjects, ', ')." />
 
 		<Error
 			Condition="!Exists('%(UdapiProject.RootDir)%(UdapiProject.Directory)%(UdapiProject.Filename).xml')"

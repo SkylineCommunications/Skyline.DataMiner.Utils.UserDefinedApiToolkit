@@ -61,6 +61,7 @@ namespace UserDefinedApiToolkit.Tests.Build
 			content.Should().Contain("\"ScriptName\":\"Test Script\"");
 			content.Should().Contain("\"Route\":\"v1/installer/{id}\"");
 			content.Should().NotContain("\"Route\":\"v1/installer\"");
+			content.Split(new[] { "\"Route\":\"v1/installer/{id}\"" }, StringSplitOptions.None).Length.Should().Be(2);
 		}
 
 		[TestMethod]
@@ -181,7 +182,8 @@ namespace UserDefinedApiToolkit.Tests.Build
 			var output = RunMsBuild(centralProjectPath, out var exitCode);
 
 			exitCode.Should().NotBe(0, output);
-			output.Should().Contain("Every UdapiProject must reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package.");
+			output.Should().Contain("The following UdapiProject entries do not reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package:");
+			output.Should().Contain("ChildApi.proj");
 		}
 
 		[TestMethod]
