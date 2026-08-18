@@ -79,6 +79,7 @@ namespace UserDefinedApiToolkit.Tests.Build
 			Directory.CreateDirectory(packageBuildDirectory);
 			Directory.CreateDirectory(taskDirectory);
 			Directory.CreateDirectory(childDirectory);
+			File.WriteAllText(childScriptPath, "<DMSScript><Name>Central Test Script</Name></DMSScript>");
 			File.Copy(toolkitTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(toolkitTargetSource)));
 			File.Copy(installerTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)));
 
@@ -112,10 +113,11 @@ namespace UserDefinedApiToolkit.Tests.Build
 
 			File.WriteAllText(centralProjectPath, $@"<Project ToolsVersion=""Current"">
 	<PropertyGroup>
+		<DataMinerType>Package</DataMinerType>
 		<OutDir>{Escape(Path.Combine(packageDirectory, "bin") + Path.DirectorySeparatorChar)}</OutDir>
 	</PropertyGroup>
 	<ItemGroup>
-		<UdapiProject Include=""..\ChildApi\ChildApi.proj"" />
+		<UdapiProject Include=""..\ChildApi\*.proj"" />
 	</ItemGroup>
 	<Target Name=""Build"">
 		<Error
@@ -146,6 +148,120 @@ namespace UserDefinedApiToolkit.Tests.Build
 			var generatedContent = File.ReadAllText(generatedFile);
 			generatedContent.Should().Contain("\"ToolkitVersion\":\"9.8.7\"");
 			generatedContent.Should().Contain("\"ScriptName\":\"Central Test Script\"");
+		}
+
+		[TestMethod]
+		public void InstallerTargets_RejectsProjectWithoutToolkit()
+		{
+			var packageDirectory = Path.Combine(_outputPath, "Package");
+			var packageBuildDirectory = Path.Combine(packageDirectory, "build");
+			var childDirectory = Path.Combine(_outputPath, "ChildApi");
+			var childProjectPath = Path.Combine(childDirectory, "ChildApi.proj");
+			var centralProjectPath = Path.Combine(packageDirectory, "CentralPackage.proj");
+			var installerTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets");
+
+			Directory.CreateDirectory(packageBuildDirectory);
+			Directory.CreateDirectory(childDirectory);
+			File.Copy(installerTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)));
+
+			File.WriteAllText(childProjectPath, @"<Project ToolsVersion=""Current"">
+	<Target Name=""Build"" />
+</Project>");
+			File.WriteAllText(centralProjectPath, $@"<Project ToolsVersion=""Current"">
+	<PropertyGroup>
+		<DataMinerType>Package</DataMinerType>
+	</PropertyGroup>
+	<ItemGroup>
+		<UdapiProject Include=""..\ChildApi\ChildApi.proj"" />
+	</ItemGroup>
+	<Target Name=""Build"" />
+	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)))}"" />
+</Project>");
+
+			var output = RunMsBuild(centralProjectPath, out var exitCode);
+
+			exitCode.Should().NotBe(0, output);
+			output.Should().Contain("Every UdapiProject must reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package.");
+		}
+
+		[TestMethod]
+		public void InstallerTargets_RejectsProjectWithoutScriptXml()
+		{
+			var packageDirectory = Path.Combine(_outputPath, "Package");
+			var packageBuildDirectory = Path.Combine(packageDirectory, "build");
+			var childDirectory = Path.Combine(_outputPath, "ChildApi");
+			var childProjectPath = Path.Combine(childDirectory, "ChildApi.proj");
+			var centralProjectPath = Path.Combine(packageDirectory, "CentralPackage.proj");
+			var toolkitTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets");
+			var installerTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets");
+
+			Directory.CreateDirectory(packageBuildDirectory);
+			Directory.CreateDirectory(childDirectory);
+			File.Copy(toolkitTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(toolkitTargetSource)));
+			File.Copy(installerTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)));
+
+			File.WriteAllText(childProjectPath, $@"<Project ToolsVersion=""Current"">
+	<Target Name=""Build"" />
+	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(toolkitTargetSource)))}"" />
+</Project>");
+			File.WriteAllText(centralProjectPath, $@"<Project ToolsVersion=""Current"">
+	<PropertyGroup>
+		<DataMinerType>Package</DataMinerType>
+	</PropertyGroup>
+	<ItemGroup>
+		<UdapiProject Include=""..\ChildApi\ChildApi.proj"" />
+	</ItemGroup>
+	<Target Name=""Build"" />
+	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)))}"" />
+</Project>");
+
+			var output = RunMsBuild(centralProjectPath, out var exitCode);
+
+			exitCode.Should().NotBe(0, output);
+			output.Should().Contain("must have a matching Automation script XML file next to the project file.");
+		}
+
+		[TestMethod]
+		public void InstallerTargets_RejectsNonPackageProject()
+		{
+			var packageDirectory = Path.Combine(_outputPath, "Package");
+			var packageBuildDirectory = Path.Combine(packageDirectory, "build");
+			var centralProjectPath = Path.Combine(packageDirectory, "NonPackage.proj");
+			var installerTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets");
+
+			Directory.CreateDirectory(packageBuildDirectory);
+			File.Copy(installerTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)));
+			File.WriteAllText(centralProjectPath, $@"<Project ToolsVersion=""Current"">
+	<PropertyGroup>
+		<DataMinerType>Automation</DataMinerType>
+	</PropertyGroup>
+	<Target Name=""Build"" />
+	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)))}"" />
+</Project>");
+
+			var output = RunMsBuild(centralProjectPath, out var exitCode);
+
+			exitCode.Should().NotBe(0, output);
+			output.Should().Contain("can only be used in a DataMiner package project");
+		}
+
+		private static string RunMsBuild(string projectPath, out int exitCode)
+		{
+			var process = Process.Start(new ProcessStartInfo
+			{
+				FileName = "dotnet",
+				Arguments = $"msbuild \"{projectPath}\" /t:Build /nologo /v:minimal",
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+				CreateNoWindow = true,
+			});
+			process.Should().NotBeNull();
+
+			var output = process!.StandardOutput.ReadToEnd() + Environment.NewLine + process.StandardError.ReadToEnd();
+			process.WaitForExit();
+			exitCode = process.ExitCode;
+			return output;
 		}
 
 		private static UserDefinedApiToolkitTask CreateTask(

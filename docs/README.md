@@ -275,8 +275,9 @@ OpenAPI; they do not change runtime serialization or request handling.
 ## Installer file generation
 
 The installer package generates the JSON metadata files used to install User-Defined APIs. Add the
-installer package to the central DataMiner package project and list the UDAPI projects that should
-be built and included:
+installer package to a central DataMiner package project
+(`<DataMinerType>Package</DataMinerType>`) and list the UDAPI projects that should be built and
+included:
 
 ```xml
 <ItemGroup>
@@ -298,7 +299,8 @@ package project's `SetupContent/UDAPI` directory. Independent projects are built
 ```
 
 All matched projects are built and must be UDAPI projects. Exclude the central package project if
-it is within the wildcard scope.
+it is within the wildcard scope. The installer package validates toolkit availability and the
+matching script XML file before building the selected projects.
 
 ## Troubleshooting
 

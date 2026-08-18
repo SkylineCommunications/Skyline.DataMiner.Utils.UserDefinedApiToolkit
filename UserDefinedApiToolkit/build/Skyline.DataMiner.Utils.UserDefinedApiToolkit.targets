@@ -68,6 +68,9 @@
 			DocumentationFile="$(_UserDefinedApiOpenApiDocFile)" />
 	</Target>
 
+	<Target Name="SkylineUserDefinedApiToolkit_ValidateInstallerProject"
+			Returns="$(MSBuildProjectFullPath)" />
+
 	<Target Name="SkylineUserDefinedApiToolkit_GenerateInstallerFile"
 			AfterTargets="Build"
 			DependsOnTargets="ResolveReferences"

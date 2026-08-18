@@ -6,7 +6,27 @@
 
 	<Target Name="SkylineUserDefinedApiToolkit_Installer_BuildAndCollectUdapiProjects"
 			BeforeTargets="Build"
-			Condition="'@(UdapiProject)' != ''">
+			Condition="'$(DataMinerType)' != 'Package' or '@(UdapiProject)' != ''">
+		<Error
+			Condition="'$(DataMinerType)' != 'Package'"
+			Text="The Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer package can only be used in a DataMiner package project with &lt;DataMinerType&gt;Package&lt;/DataMinerType&gt;." />
+
+		<MSBuild
+			Projects="@(UdapiProject)"
+			Targets="SkylineUserDefinedApiToolkit_ValidateInstallerProject"
+			BuildInParallel="true"
+			SkipNonexistentTargets="true">
+			<Output TaskParameter="TargetOutputs" ItemName="_UserDefinedApiToolkitValidatedProjects" />
+		</MSBuild>
+
+		<Error
+			Condition="'@(_UserDefinedApiToolkitValidatedProjects->Count())' != '@(UdapiProject->Count())'"
+			Text="Every UdapiProject must reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package. Check the configured entries: @(UdapiProject, ', ')." />
+
+		<Error
+			Condition="!Exists('%(UdapiProject.RootDir)%(UdapiProject.Directory)%(UdapiProject.Filename).xml')"
+			Text="UdapiProject '%(UdapiProject.Identity)' must have a matching Automation script XML file next to the project file." />
+
 		<MSBuild
 			Projects="@(UdapiProject)"
 			Targets="Build"
