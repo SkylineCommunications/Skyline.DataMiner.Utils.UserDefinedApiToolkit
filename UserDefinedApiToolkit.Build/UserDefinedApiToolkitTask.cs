@@ -16,39 +16,39 @@
 	public class UserDefinedApiToolkitTask : Task
 	{
 		[Required]
-		public string OutputPath { get; set; }
+		public string? OutputPath { get; set; }
 
 		/// <summary>
 		/// Gets or sets the generated installer metadata file name.
 		/// </summary>
 		[Required]
-		public string OutputFileName { get; set; }
+		public string? OutputFileName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the path to the compiled assembly that will be analyzed for installer metadata
 		/// generation.
 		/// </summary>
 		[Required]
-		public string TargetPath { get; set; }
+		public string? TargetPath { get; set; }
 
 		[Required]
-		public string ScriptXmlPath { get; set; }
+		public string? ScriptXmlPath { get; set; }
 
 		[Required]
-		public string ToolkitVersion { get; set; }
+		public string? ToolkitVersion { get; set; }
 
 		/// <summary>
 		/// Gets or sets the assembly references required for loading types during installer metadata
 		/// generation.
 		/// </summary>
 		[Required]
-		public ITaskItem[] References { get; set; }
+		public ITaskItem[] References { get; set; } = [];
 
 		/// <summary>
 		/// Gets or sets the path to the XML documentation file containing the assembly's documentation comments.
 		/// Used to populate route descriptions in the installer metadata.
 		/// </summary>
-		public string DocumentationFile { get; set; }
+		public string? DocumentationFile { get; set; }
 
 		/// <summary>
 		/// Executes the installer-file generation task.

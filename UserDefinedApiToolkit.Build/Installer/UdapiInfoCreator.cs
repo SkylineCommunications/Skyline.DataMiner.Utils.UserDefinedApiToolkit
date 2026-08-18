@@ -13,13 +13,13 @@
 	{
 		public static UdapiInfo Create(
 			XmlDocument script,
-			string toolkitVersion,
+			string? toolkitVersion,
 			IList<ControllerUnit> controllers,
 			MsBuildLogger logger)
 		{
 			var info = new UdapiInfo
 			{
-				ToolkitVersion = toolkitVersion,
+				ToolkitVersion = toolkitVersion ?? "0.0.0",
 				ScriptName = script["DMSScript"]["Name"].InnerText,
 			};
 

@@ -29,8 +29,8 @@
 		/// <returns>The generated <see cref="OpenApiDocument"/>.</returns>
 		public static OpenApiDocument CreateDocument(
 			IList<ControllerUnit> controllers,
-			string projectName,
-			string projectVersion,
+			string? projectName,
+			string? projectVersion,
 			IBuildLogger? log = null)
 		{
 			var doc = OpenApiGenerator.Create(controllers, log);

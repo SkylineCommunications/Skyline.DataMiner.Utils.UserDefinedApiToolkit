@@ -14,31 +14,31 @@
 	public class OpenApiTask : Task
 	{
 		[Required]
-		public string OutputPath { get; set; }
+		public string? OutputPath { get; set; }
 
 		/// <summary>
 		/// Gets or sets the path to the compiled assembly that will be analyzed for OpenAPI generation.
 		/// </summary>
 		[Required]
-		public string TargetPath { get; set; }
+		public string? TargetPath { get; set; }
 
 		/// <summary>
 		/// Gets or sets the name of the project, used as the OpenAPI document title.
 		/// </summary>
 		[Required]
-		public string ProjectName { get; set; }
+		public string? ProjectName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the version of the project, used as the OpenAPI document version.
 		/// </summary>
 		[Required]
-		public string ProjectVersion { get; set; }
+		public string? ProjectVersion { get; set; }
 
 		/// <summary>
 		/// Gets or sets the assembly references required for loading types during OpenAPI generation.
 		/// </summary>
 		[Required]
-		public ITaskItem[] References { get; set; }
+		public ITaskItem[] References { get; set; } = [];
 
 		/// <summary>
 		/// Gets or sets the format of the OpenAPI output file. Default is "yaml".<br/>

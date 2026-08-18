@@ -19,13 +19,13 @@
 		private readonly MetadataLoadContext _mlc;
 
 		public ControllerResolver(
-			string targetPath,
-			IEnumerable<string> references,
+			string? targetPath,
+			IEnumerable<string>? references,
 			string? documentationFile = null,
 			IBuildLogger? logger = null)
 		{
 			_targetPath = targetPath ?? throw new ArgumentNullException(nameof(targetPath));
-			_references = references.ToArray() ?? throw new ArgumentNullException(nameof(references));
+			_references = references?.ToArray() ?? throw new ArgumentNullException(nameof(references));
 
 			var allPaths = references.Append(targetPath);
 			var resolver = new PathAssemblyResolver(allPaths);

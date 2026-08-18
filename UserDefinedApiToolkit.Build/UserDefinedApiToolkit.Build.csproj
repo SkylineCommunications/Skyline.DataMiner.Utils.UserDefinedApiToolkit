@@ -50,6 +50,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Remove="Skyline.DataMiner.Utils.SecureCoding.Analyzers" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- Allows the test project to unit test the internal OpenAPI generation building blocks
 		     (ComponentFactory, ComponentRegistry, TypeHelper, OperationProvider, ControllerUnit, ...)
 		     directly, in addition to the public OpenApiTask end-to-end tests. -->
