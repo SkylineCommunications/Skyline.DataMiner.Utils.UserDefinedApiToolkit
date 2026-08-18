@@ -99,8 +99,8 @@ our [DataMiner community platform](https://community.dataminer.services/question
 dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 ```
 
-See the [getting started and configuration guide](docs/README.md) for controller setup,
-parameter binding, dependency injection, converters, results, and OpenAPI options.
+See the [documentation guide](docs/README.md) for controller setup, parameter binding, dependency
+injection, converters, results, and OpenAPI options.
 
 ## Features
 
