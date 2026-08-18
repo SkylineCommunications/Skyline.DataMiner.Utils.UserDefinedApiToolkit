@@ -1,5 +1,7 @@
 ﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build
 {
+	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.Logging;
+
 	/// <summary>
 	/// Indicates how significant a message logged during OpenAPI generation is, so the consumer
 	/// (e.g. <see cref="OpenApiTask"/>) can map it to an appropriate build log verbosity/importance.
@@ -7,8 +9,8 @@
 	/// <remarks>
 	/// This type intentionally has no dependency on MSBuild (e.g. Microsoft.Build.Framework's
 	/// MessageImportance), so the OpenAPI generation logic stays decoupled from - and testable
-	/// without - the MSBuild task infrastructure. Only <see cref="OpenApiTask"/> itself maps
-	/// these levels to MSBuild-specific concepts.
+	/// without - the MSBuild task infrastructure. The MSBuild task adapters map these levels
+	/// to MSBuild-specific concepts.
 	/// </remarks>
 	internal enum BuildLogLevel
 	{
@@ -37,8 +39,8 @@
 	/// <remarks>
 	/// This interface intentionally has no dependency on MSBuild, so the OpenAPI generation
 	/// logic stays decoupled from - and testable without - the MSBuild task infrastructure.
-	/// Only <see cref="OpenApiTask"/> provides an implementation that maps these levels to
-	/// MSBuild's logging APIs (see <see cref="MsBuildLogger"/>).
+	/// The MSBuild task adapters provide implementations that map these levels to MSBuild's
+	/// logging APIs (see <see cref="MsBuildLogger"/>).
 	/// </remarks>
 	internal interface IBuildLogger
 	{

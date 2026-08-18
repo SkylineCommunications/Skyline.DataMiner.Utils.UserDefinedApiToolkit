@@ -8,6 +8,8 @@
 
 	using Microsoft.OpenApi;
 
+	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.Analysis;
+
 	internal class OperationProvider
 	{
 		private readonly ComponentRegistry _components;
@@ -25,7 +27,7 @@
 				Tags = new HashSet<OpenApiTagReference>(),
 			};
 
-			if (!TryGetHttpMethod(method, out httpMethod))
+			if (!method.TryGetHttpMethod(out httpMethod))
 			{
 				return false;
 			}
@@ -41,7 +43,7 @@
 			var producesTypes = GetContentTypes(unit, method, "Produces");
 			var consumesTypes = GetContentTypes(unit, method, "Consumes");
 
-			var docs = GetMethodDocs(unit, method);
+			var docs = unit.GetMethodDocs(method);
 			operation.Responses = GetResponses(method, docs, producesTypes);
 
 			var routePlaceholders = TypeHelper.GetRoutePlaceholders(unit.GetRoute(method));
@@ -59,27 +61,6 @@
 			}
 
 			return true;
-		}
-
-		private bool TryGetHttpMethod(MethodInfo method, out HttpMethod httpMethod)
-		{
-			httpMethod = HttpMethod.Get;
-
-			foreach (var attr in method.GetCustomAttributesData())
-			{
-				switch (TypeHelper.GetAttributeName(attr))
-				{
-					case "HttpGetAttribute": httpMethod = HttpMethod.Get; return true;
-					case "HttpPostAttribute": httpMethod = HttpMethod.Post; return true;
-					case "HttpPutAttribute": httpMethod = HttpMethod.Put; return true;
-					case "HttpDeleteAttribute": httpMethod = HttpMethod.Delete; return true;
-					case "HttpPatchAttribute": httpMethod = new HttpMethod("PATCH"); return true;
-					case "HttpHeadAttribute": httpMethod = HttpMethod.Head; return true;
-					case "HttpOptionsAttribute": httpMethod = HttpMethod.Options; return true;
-				}
-			}
-
-			return false;
 		}
 
 		private OpenApiResponses GetResponses(MethodInfo method, MethodDocs? docs, IReadOnlyList<string> contentTypes)
@@ -250,54 +231,6 @@
 			}
 
 			return types;
-		}
-
-		private MethodDocs? GetMethodDocs(ControllerUnit unit, MethodInfo method)
-		{
-			if (unit.XmlDocs is null)
-			{
-				return null;
-			}
-
-			var memberId = BuildMemberId(method);
-			var memberElement = unit.XmlDocs
-				.Descendants("member")
-				.FirstOrDefault(m => m.Attribute("name")?.Value == memberId);
-
-			if (memberElement is null)
-			{
-				return null;
-			}
-
-			return new MethodDocs
-			{
-				Summary = memberElement.Element("summary")?.Value?.Trim(),
-				Example = memberElement.Element("example")?.Value?.Trim(),
-				Parameters = memberElement.Elements("param")
-					.Where(p => p.Attribute("name") != null)
-					.ToDictionary(
-						p => p.Attribute("name")!.Value,
-						p => p.Value.Trim()),
-			};
-		}
-
-		private string BuildMemberId(MethodInfo method)
-		{
-			var typeName = method.DeclaringType!.FullName;
-			var paramTypes = method.GetParameters()
-				.Select(p => p.ParameterType.FullName ?? p.ParameterType.Name);
-
-			var paramStr = String.Join(",", paramTypes);
-			return String.IsNullOrEmpty(paramStr)
-				? $"M:{typeName}.{method.Name}"
-				: $"M:{typeName}.{method.Name}({paramStr})";
-		}
-
-		private class MethodDocs
-		{
-			public string? Summary { get; set; }
-			public string? Example { get; set; }
-			public Dictionary<string, string>? Parameters { get; set; }
 		}
 	}
 }

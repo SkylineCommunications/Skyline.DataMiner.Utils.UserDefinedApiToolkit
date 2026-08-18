@@ -6,6 +6,7 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<SonarQubeExclude>true</SonarQubeExclude>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,6 +17,11 @@
 		<PackageReference Include="Skyline.DataMiner.Utils.DOM" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" />
 		<PackageReference Include="Microsoft.OpenApi" />
+		<PackageReference Include="System.Reflection.Metadata" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Remove="Skyline.DataMiner.Utils.SecureCoding.Analyzers" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,7 +30,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="System.Web" />
+		<Reference Include="System.Web" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="$(RootDir)\UserDefinedApiToolkit\build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets"
+			CopyToOutputDirectory="PreserveNewest" />
+		<None Include="$(RootDir)\UserDefinedApiToolkit.Installer\build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets"
+			CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<_UserDefinedApiToolkitInstallerPackageOutputDirectory>$(MSBuildProjectDirectory)\SetupContent\UDAPI</_UserDefinedApiToolkitInstallerPackageOutputDirectory>
+	</PropertyGroup>
+
+	<Target Name="SkylineUserDefinedApiToolkit_Installer_BuildAndCollectUdapiProjects"
+			BeforeTargets="Build"
+			Condition="'$(DataMinerType)' != 'Package' or '@(UdapiProject)' != ''">
+		<Error
+			Condition="'$(DataMinerType)' != 'Package'"
+			Text="The Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer package can only be used in a DataMiner package project with &lt;DataMinerType&gt;Package&lt;/DataMinerType&gt;." />
+
+		<ItemGroup>
+			<_UserDefinedApiToolkitExpectedProjects Include="@(UdapiProject->'%(FullPath)')" />
+		</ItemGroup>
+
+		<MSBuild
+			Projects="@(UdapiProject)"
+			Targets="SkylineUserDefinedApiToolkit_ValidateInstallerProject"
+			BuildInParallel="true"
+			SkipNonexistentTargets="true">
+			<Output TaskParameter="TargetOutputs" ItemName="_UserDefinedApiToolkitValidatedProjects" />
+		</MSBuild>
+
+		<ItemGroup>
+			<_UserDefinedApiToolkitInvalidProjects Include="@(_UserDefinedApiToolkitExpectedProjects)" />
+			<_UserDefinedApiToolkitInvalidProjects Remove="@(_UserDefinedApiToolkitValidatedProjects)" />
+		</ItemGroup>
+
+		<Error
+			Condition="'@(_UserDefinedApiToolkitInvalidProjects)' != ''"
+			Text="The following UdapiProject entries do not reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package: @(_UserDefinedApiToolkitInvalidProjects, ', ')." />
+
+		<Error
+			Condition="!Exists('%(UdapiProject.RootDir)%(UdapiProject.Directory)%(UdapiProject.Filename).xml')"
+			Text="UdapiProject '%(UdapiProject.Identity)' must have a matching Automation script XML file next to the project file." />
+
+		<MSBuild
+			Projects="@(UdapiProject)"
+			Targets="Build"
+			BuildInParallel="true" />
+
+		<MSBuild
+			Projects="@(UdapiProject)"
+			Targets="SkylineUserDefinedApiToolkit_GenerateInstallerFile"
+			Properties="UserDefinedApiToolkitGenerateInstallerFile=true"
+			BuildInParallel="true">
+			<Output TaskParameter="TargetOutputs" ItemName="_UserDefinedApiToolkitInstallerFiles" />
+		</MSBuild>
+
+		<Copy
+			SourceFiles="@(_UserDefinedApiToolkitInstallerFiles)"
+			DestinationFolder="$(_UserDefinedApiToolkitInstallerPackageOutputDirectory)"
+			SkipUnchangedFiles="true" />
+	</Target>
+</Project>

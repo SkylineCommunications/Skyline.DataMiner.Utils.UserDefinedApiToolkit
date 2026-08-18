@@ -3,16 +3,11 @@
 	using System;
 	using System.Collections.Generic;
 	using System.IO;
-	using System.Linq;
-	using System.Reflection;
-	using System.Xml.Linq;
 
 	using Microsoft.OpenApi;
 
-	using Skyline.DataMiner.Utils.SecureCoding.SecureIO;
-
 	/// <summary>
-	/// Builds an <see cref="OpenApiDocument"/> for a compiled user-defined API assembly and
+	/// Builds an <see cref="OpenApiDocument"/> from resolved user-defined API controllers and
 	/// formats it as JSON or YAML.
 	/// </summary>
 	/// <remarks>
@@ -25,41 +20,20 @@
 	internal static class OpenApiProjectGenerator
 	{
 		/// <summary>
-		/// Loads the target assembly (and its references) through a <see cref="MetadataLoadContext"/>,
-		/// finds its user-defined API controllers, and builds the resulting <see cref="OpenApiDocument"/>.
+		/// Builds an OpenAPI document from the resolved user-defined API controllers.
 		/// </summary>
-		/// <param name="targetPath">Path to the compiled assembly to analyze.</param>
-		/// <param name="references">Paths to the assemblies referenced by <paramref name="targetPath"/>.</param>
-		/// <param name="documentationFile">Optional path to the assembly's XML documentation file.</param>
+		/// <param name="controllers">The resolved user-defined API controllers to document.</param>
 		/// <param name="projectName">Used as the OpenAPI document title.</param>
 		/// <param name="projectVersion">Used as the OpenAPI document version.</param>
-		/// <param name="log">Optional callback used to report progress/diagnostics.</param>
-		/// <returns>The generated <see cref="OpenApiDocument"/> for the assembly's user-defined API controllers.</returns>
+		/// <param name="log">Optional logger used to report progress and diagnostics.</param>
+		/// <returns>The generated <see cref="OpenApiDocument"/>.</returns>
 		public static OpenApiDocument CreateDocument(
-			string targetPath,
-			IEnumerable<string> references,
-			string? documentationFile,
-			string projectName,
-			string projectVersion,
+			IList<ControllerUnit> controllers,
+			string? projectName,
+			string? projectVersion,
 			IBuildLogger? log = null)
 		{
-			var allPaths = references.Append(targetPath);
-			var resolver = new PathAssemblyResolver(allPaths);
-
-			using var mlc = new MetadataLoadContext(resolver);
-			var assembly = mlc.LoadFromAssemblyPath(targetPath);
-			var xmlDocs = LoadXmlDocs(documentationFile);
-
-			var controllers = assembly.GetTypes()
-				.Where(t => t.IsClass &&
-							!t.IsAbstract &&
-							TypeHelper.HasAttribute(t, "ApiController") &&
-							TypeHelper.HasAttribute(t, "Route") &&
-							t.BaseType?.Name == "ControllerBase")
-				.Select(t => new ControllerUnit(t, xmlDocs))
-				.ToList();
-
-			var doc = OpenApiGenerator.Create(controllers, xmlDocs, log);
+			var doc = OpenApiGenerator.Create(controllers, log);
 			doc.Info.Title = projectName ?? "User Defined API";
 			doc.Info.Version = projectVersion ?? "1.0.0";
 
@@ -87,16 +61,6 @@
 				doc.SerializeAsV3(writer);
 				return ("openapi.yaml", sw.ToString());
 			}
-		}
-
-		private static XDocument? LoadXmlDocs(string? documentationFile)
-		{
-			if (String.IsNullOrEmpty(documentationFile) || !documentationFile.IsPathValid() || !File.Exists(documentationFile))
-			{
-				return null;
-			}
-
-			return XDocument.Load(documentationFile);
 		}
 	}
 }
