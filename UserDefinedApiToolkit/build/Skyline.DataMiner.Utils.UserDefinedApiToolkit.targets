@@ -22,6 +22,8 @@
 
 	<PropertyGroup>
 		<OpenApiFormat Condition="'$(OpenApiFormat)' == ''">yaml</OpenApiFormat>
+		<OpenApiInfoTitle Condition="'$(OpenApiInfoTitle)' == ''">$(MSBuildProjectName)</OpenApiInfoTitle>
+		<OpenApiInfoVersion Condition="'$(OpenApiInfoVersion)' == ''">$(Version)</OpenApiInfoVersion>
 	</PropertyGroup>
 
 	<Target Name="SkylineUserDefinedApiToolkit_GenerateOpenApi"
@@ -41,8 +43,8 @@
 		<OpenApiTask
 			TargetPath="$(TargetPath)"
 			OutputPath="$(OutDir)"
-			ProjectName="$(MSBuildProjectName)"
-			ProjectVersion="$(Version)"
+			ProjectName="$(OpenApiInfoTitle)"
+			ProjectVersion="$(OpenApiInfoVersion)"
 			References="@(_UserDefinedApiOpenApiReference)"
 			Format="$(OpenApiFormat)"
 			DocumentationFile="$(_UserDefinedApiOpenApiDocFile)" />
