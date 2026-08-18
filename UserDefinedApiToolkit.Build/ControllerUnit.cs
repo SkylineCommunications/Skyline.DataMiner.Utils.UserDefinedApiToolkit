@@ -5,6 +5,8 @@
 	using System.Reflection;
 	using System.Xml.Linq;
 
+	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.Analysis;
+
 	internal class ControllerUnit
 	{
 		internal ControllerUnit(Type controllerType, XDocument? xmlDocs)
@@ -39,6 +41,35 @@
 			var controllerRoute = GetRoute();
 			var methodTemplate = GetMethodTemplate(method);
 			return CombineRoutes(controllerRoute, methodTemplate);
+		}
+
+		public MethodDocs? GetMethodDocs(MethodInfo method)
+		{
+			if (XmlDocs is null)
+			{
+				return null;
+			}
+
+			var memberId = BuildMemberId(method);
+			var memberElement = XmlDocs
+				.Descendants("member")
+				.FirstOrDefault(m => m.Attribute("name")?.Value == memberId);
+
+			if (memberElement is null)
+			{
+				return null;
+			}
+
+			return new MethodDocs
+			{
+				Summary = memberElement.Element("summary")?.Value?.Trim(),
+				Example = memberElement.Element("example")?.Value?.Trim(),
+				Parameters = memberElement.Elements("param")
+					.Where(p => p.Attribute("name") != null)
+					.ToDictionary(
+						p => p.Attribute("name")!.Value,
+						p => p.Value.Trim()),
+			};
 		}
 
 		private static string? GetMethodTemplate(MethodInfo method)
@@ -87,6 +118,18 @@
 			}
 
 			return $"{left}/{right}";
+		}
+
+		private string BuildMemberId(MethodInfo method)
+		{
+			var typeName = method.DeclaringType!.FullName;
+			var paramTypes = method.GetParameters()
+				.Select(p => p.ParameterType.FullName ?? p.ParameterType.Name);
+
+			var paramStr = String.Join(",", paramTypes);
+			return String.IsNullOrEmpty(paramStr)
+				? $"M:{typeName}.{method.Name}"
+				: $"M:{typeName}.{method.Name}({paramStr})";
 		}
 	}
 }

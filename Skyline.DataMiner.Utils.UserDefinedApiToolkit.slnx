@@ -25,6 +25,8 @@
     <File Path=".github/workflows/Public.yml" />
   </Folder>
   <Project Path="UserDefinedApiToolkit.Build/UserDefinedApiToolkit.Build.csproj" Id="90c08f51-cb6c-4f7d-b146-6caf05fdfb09" />
+  <Project Path="UserDefinedApiToolkit.Installer.Shared/UserDefinedApiToolkit.Installer.Shared.shproj" Id="a5750eab-1e5f-4268-97a6-6de65862bb2e" />
+  <Project Path="UserDefinedApiToolkit.Installer/UserDefinedApiToolkit.Installer.csproj" Id="ca4ddc97-9b46-4c63-b741-fd407324967f" />
   <Project Path="UserDefinedApiToolkit.Tests/UserDefinedApiToolkit.Tests.csproj" Id="a1368df1-a512-4cdf-8c4f-f50b3c9e91b5" />
   <Project Path="UserDefinedApiToolkit/UserDefinedApiToolkit.csproj" />
 </Solution>

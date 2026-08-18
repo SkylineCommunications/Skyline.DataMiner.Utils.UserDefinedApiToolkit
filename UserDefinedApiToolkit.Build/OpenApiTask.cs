@@ -3,10 +3,12 @@
 	using System;
 	using System.IO;
 	using System.Linq;
+	using System.Reflection;
 
 	using Microsoft.Build.Framework;
 	using Microsoft.Build.Utilities;
 
+	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.Logging;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.OpenApi;
 
 	public class OpenApiTask : Task
@@ -50,7 +52,7 @@
 		/// Gets or sets the path to the XML documentation file containing the assembly's documentation comments.
 		/// Used to populate descriptions in the OpenAPI specification.
 		/// </summary>
-		public string DocumentationFile { get; set; }
+		public string? DocumentationFile { get; set; }
 
 		/// <summary>
 		/// Executes the OpenAPI generation task.
@@ -64,13 +66,15 @@
 			{
 				Log.LogMessage(MessageImportance.Normal, $"Generating OpenAPI file for project '{ProjectName}' version '{ProjectVersion}'...");
 
+				var logger = new MsBuildLogger(Log);
+
+				using var resolver = new ControllerResolver(TargetPath, References.Select(r => r.ItemSpec), DocumentationFile, logger);
+				var controllers = resolver.Resolve();
 				var doc = OpenApiProjectGenerator.CreateDocument(
-					 TargetPath,
-					 References.Select(r => r.ItemSpec),
-					 DocumentationFile,
+					 controllers,
 					 ProjectName,
 					 ProjectVersion,
-					 new MsBuildLogger(Log));
+					 logger);
 
 				var (fileName, content) = OpenApiProjectGenerator.FormatDocument(doc, Format);
 

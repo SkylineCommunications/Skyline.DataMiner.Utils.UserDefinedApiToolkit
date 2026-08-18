@@ -1,4 +1,4 @@
-﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build
+﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.Logging
 {
 	using Microsoft.Build.Framework;
 	using Microsoft.Build.Utilities;

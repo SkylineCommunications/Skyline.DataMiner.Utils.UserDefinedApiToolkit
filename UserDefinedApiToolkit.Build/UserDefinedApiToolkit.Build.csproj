@@ -45,8 +45,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" ExcludeAssets="Runtime" />
 		<PackageReference Include="Microsoft.OpenApi" PrivateAssets="all" />
-		<PackageReference Include="System.Reflection.MetadataLoadContext" />
-		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" />
+		<PackageReference Include="System.Reflection.MetadataLoadContext" PrivateAssets="all" />
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -56,14 +56,5 @@
 		<InternalsVisibleTo Include="UserDefinedApiToolkit.Tests" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+	<Import Project="..\UserDefinedApiToolkit.Installer.Shared\UserDefinedApiToolkit.Installer.Shared.projitems" Label="Shared" />
 </Project>

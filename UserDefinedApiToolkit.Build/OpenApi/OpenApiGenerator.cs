@@ -11,7 +11,7 @@
 
 	internal class OpenApiGenerator
 	{
-		public static OpenApiDocument Create(IList<ControllerUnit> controllers, XDocument? xmlDocs, IBuildLogger? log = null)
+		public static OpenApiDocument Create(IList<ControllerUnit> controllers, IBuildLogger? log = null)
 		{
 			var doc = new OpenApiDocument
 			{

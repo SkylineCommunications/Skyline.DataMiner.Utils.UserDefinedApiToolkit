@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<PlatformTarget>AnyCpu</PlatformTarget>
+		<LangVersion>latest</LangVersion>
+		<OutputType>Library</OutputType>
+		<AssemblyTitle>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer</AssemblyTitle>
+		<Product>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer</Product>
+		<AssemblyName>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer</AssemblyName>
+		<RootNamespace>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer</RootNamespace>
+
+		<PackageId>Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer</PackageId>
+		<PackageTags>Skyline;DataMiner</PackageTags>
+		<PackageProjectUrl>https://skyline.be</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageIcon>Icon.png</PackageIcon>
+		<PackageOutputPath>$(NugetDir)</PackageOutputPath>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+		<Authors>SkylineCommunications</Authors>
+		<Company>Skyline Communications</Company>
+		<Description>Helper nuget package to more easily install User Defined Api's created with the toolkit.</Description>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/SkylineCommunications/Skyline.DataMiner.Utils.UserDefinedApiToolkit</RepositoryUrl>
+		<Deterministic>false</Deterministic>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="" />
+		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
+		<None Include="nuget\Icon.png" Pack="true" PackagePath="" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="Skyline.DataMiner.Core.AppPackageInstaller" />
+		<PackageReference Include="Skyline.DataMiner.Dev.Automation" />
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" />
+	</ItemGroup>
+
+	<Import Project="..\UserDefinedApiToolkit.Installer.Shared\UserDefinedApiToolkit.Installer.Shared.projitems" Label="Shared" />
+
+	<Target Name="CopyNuGetPackage" AfterTargets="Pack" Condition="'$(NuGetStorePath)' != '' and '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<Copy SourceFiles="$(PackageOutputPath)\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(NuGetStorePath)\$(PackageId)" />
+	</Target>
+</Project>

@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-	<PropertyGroup>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	</PropertyGroup>
-	<ItemGroup>
-		<!--Runtime-->
-		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
-		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-		<PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
-		<PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-		<PackageVersion Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
-		<PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding" Version="2.2.3" />
-		<!--Build-->
-		<PackageVersion Include="Microsoft.OpenApi" Version="3.9.0" />
-		<PackageVersion Include="Microsoft.Build" Version="18.3.3" />
-		<PackageVersion Include="Microsoft.Build.Framework" Version="18.3.3" />
-		<PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.8.2" />
-		<PackageVersion Include="Microsoft.Build.Locator" Version="1.9.1" />
-		<!--Testing-->
-		<PackageVersion Include="MSTest" Version="4.3.3" />
-		<PackageVersion Include="FluentAssertions" Version="7.2.2" />
-		<PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
-		<PackageVersion Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
-		<PackageVersion Include="Verify.MSTest" Version="31.27.0" />
-		<!--Analyzers-->
-		<PackageVersion Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2" />
-		<PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="2.2.3" />
-		<PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
-		<PackageVersion Include="System.Reflection.MetadataLoadContext" Version="10.0.10" />
-	</ItemGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!--Runtime-->
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="Skyline.DataMiner.CICD.Parsers.Automation" Version="6.2.0" />
+    <PackageVersion Include="Skyline.DataMiner.Core.AppPackageInstaller" Version="4.1.0" />
+    <PackageVersion Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
+    <PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding" Version="2.2.3" />
+    <!--Build-->
+    <PackageVersion Include="Microsoft.OpenApi" Version="3.9.0" />
+    <PackageVersion Include="Microsoft.Build" Version="18.3.3" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="18.3.3" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.8.2" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="1.9.1" />
+    <!--Testing-->
+    <PackageVersion Include="MSTest" Version="4.3.3" />
+    <PackageVersion Include="FluentAssertions" Version="7.2.2" />
+    <PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
+    <PackageVersion Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
+    <PackageVersion Include="Verify.MSTest" Version="31.27.0" />
+    <!--Analyzers-->
+    <PackageVersion Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2" />
+    <PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="2.2.3" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
+    <PackageVersion Include="System.Reflection.Metadata" Version="10.0.10" />
+    <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="10.0.10" />
+  </ItemGroup>
 </Project>
