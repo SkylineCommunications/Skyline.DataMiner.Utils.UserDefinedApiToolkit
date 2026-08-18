@@ -75,7 +75,7 @@ namespace UserDefinedApiToolkit.Tests.Build
 			Directory.CreateDirectory(targetDirectory);
 			Directory.CreateDirectory(taskDirectory);
 
-			var targetSource = Path.Combine(AppContext.BaseDirectory, "Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets");
+			var targetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets");
 			File.Copy(targetSource, Path.Combine(targetDirectory, Path.GetFileName(targetSource)));
 
 			var taskAssemblyDirectory = GetBuildTaskOutputDirectory();
@@ -163,7 +163,7 @@ namespace UserDefinedApiToolkit.Tests.Build
 
 		private static string GetBuildTaskOutputDirectory()
 		{
-			var directory = new DirectoryInfo(AppContext.BaseDirectory);
+			var directory = new DirectoryInfo(GetTestAssemblyDirectory());
 			var configuration = directory.Parent?.Name ?? "Debug";
 			while (directory is not null &&
 				   !File.Exists(Path.Combine(directory.FullName, "Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx")))
@@ -173,6 +173,11 @@ namespace UserDefinedApiToolkit.Tests.Build
 
 			directory.Should().NotBeNull();
 			return Path.Combine(directory!.FullName, "UserDefinedApiToolkit.Build", "bin", configuration, "netstandard2.0");
+		}
+
+		private static string GetTestAssemblyDirectory()
+		{
+			return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 		}
 
 		private static string Escape(string value)
