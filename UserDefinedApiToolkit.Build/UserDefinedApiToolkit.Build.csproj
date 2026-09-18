@@ -51,6 +51,7 @@
 
 	<ItemGroup>
 		<PackageReference Remove="Skyline.DataMiner.Utils.SecureCoding.Analyzers" />
+		<PackageReference Include="System.Reflection.Metadata" />
 	</ItemGroup>
 
 	<ItemGroup>
