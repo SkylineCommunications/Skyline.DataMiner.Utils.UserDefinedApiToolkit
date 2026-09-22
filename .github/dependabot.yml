@@ -15,6 +15,8 @@ updates:
       # FluentAssertions equal to or higher than 8.0.0 are a different license, which requires payment
       - dependency-name: "FluentAssertions"
         versions: [ ">=8.0.0" ]
+      - dependency-name: "Verify.MSTest"
+        versions: [ ">32.0.0" ]
         
       # DevPacks represents the DMA on which to compile. Doesn't make sense to always be on the latest version.
       - dependency-name: "Skyline.DataMiner.Files.*"

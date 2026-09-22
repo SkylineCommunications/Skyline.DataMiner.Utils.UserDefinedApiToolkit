@@ -28,7 +28,8 @@
 		<OpenApiFormat Condition="'$(OpenApiFormat)' == ''">yaml</OpenApiFormat>
 		<OpenApiInfoTitle Condition="'$(OpenApiInfoTitle)' == ''">$(MSBuildProjectName)</OpenApiInfoTitle>
 		<OpenApiInfoVersion Condition="'$(OpenApiInfoVersion)' == ''">$(Version)</OpenApiInfoVersion>
-		<OpenApiInfoDescription Condition="'$(OpenApiInfoDescription)' == ''"></OpenApiInfoDescription>
+		<OpenApiInfoDescription Condition="'$(OpenApiInfoDescription)' == ''">$(Description)</OpenApiInfoDescription>
+
 		<_UserDefinedApiToolkitInstallerFileName>$(MSBuildProjectName).udapi.json</_UserDefinedApiToolkitInstallerFileName>
 	</PropertyGroup>
 
