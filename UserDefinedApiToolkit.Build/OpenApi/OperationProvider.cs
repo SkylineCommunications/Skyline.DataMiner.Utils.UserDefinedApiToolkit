@@ -32,13 +32,7 @@
 				return false;
 			}
 
-			var controllerName = unit.ControllerType.Name;
-			if (controllerName.EndsWith("Controller"))
-			{
-				controllerName = controllerName.Substring(0, controllerName.Length - "Controller".Length);
-			}
-
-			operation.Tags.Add(new OpenApiTagReference(controllerName));
+			operation.Tags.Add(new OpenApiTagReference(unit.GetTagName()));
 
 			var producesTypes = GetContentTypes(unit, method, "Produces");
 			var consumesTypes = GetContentTypes(unit, method, "Consumes");

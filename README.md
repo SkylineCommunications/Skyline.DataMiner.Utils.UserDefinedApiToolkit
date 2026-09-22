@@ -126,7 +126,7 @@ Add the following to your API project's `.csproj` to generate an `openapi.yaml` 
 </PropertyGroup>
 ```
 
-The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions.
+The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions and controllers.
 
 ### Path variables
 

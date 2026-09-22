@@ -1,7 +1,9 @@
 ﻿namespace UserDefinedApiToolkit.Tests.Build
 {
 	using System.Collections.Generic;
+	using System.Linq;
 	using System.Net.Http;
+	using System.Xml.Linq;
 
 	using FluentAssertions;
 
@@ -50,6 +52,27 @@
 			builder.HandleController(doc, unit);
 
 			doc.Paths["/v1/items/{id}"].Operations.Should().ContainKey(HttpMethod.Get);
+		}
+
+		[TestMethod]
+		public void HandleController_WithClassDocs_RegistersTagDescription()
+		{
+			var (doc, builder) = Create();
+			var unit = new ControllerUnit(typeof(TestFiles.SampleController), CreateXmlDocsForType(typeof(TestFiles.SampleController), @"
+				<summary>
+				Represents a sample endpoint.
+				</summary>"));
+
+			builder.HandleController(doc, unit);
+
+			doc.Tags.Should().NotBeNull();
+			doc.Tags!.Single(tag => tag.Name == "Sample").Description.Should().Be("Represents a sample endpoint.");
+			doc.Paths["/v1/sample"].Operations.Values.Should().OnlyContain(operation => operation.Tags.Any(tag => tag.Name == "Sample"));
+		}
+
+		private static XDocument CreateXmlDocsForType(System.Type type, string memberContent)
+		{
+			return XDocument.Parse($@"<doc><members><member name=""T:{type.FullName}"">{memberContent}</member></members></doc>");
 		}
 	}
 }
