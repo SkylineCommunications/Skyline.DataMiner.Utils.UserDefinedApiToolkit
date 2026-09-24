@@ -8,7 +8,7 @@
 
 			<PropertyGroup>
 			  <GenerateOpenApi>True</GenerateOpenApi>
-			  <OpenApiFormat>yaml</OpenApiFormat> (optional: "yaml", the default, or "json")
+			  <OpenApiFormat>json</OpenApiFormat> (optional: "json", the default, or "yaml")
 			  <OpenApiInfoDescription>A description of the API.</OpenApiInfoDescription> (optional)
 			</PropertyGroup>
 
@@ -25,7 +25,7 @@
 		AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.dll" />
 
 	<PropertyGroup>
-		<OpenApiFormat Condition="'$(OpenApiFormat)' == ''">yaml</OpenApiFormat>
+		<OpenApiFormat Condition="'$(OpenApiFormat)' == ''">json</OpenApiFormat>
 		<OpenApiInfoTitle Condition="'$(OpenApiInfoTitle)' == ''">$(MSBuildProjectName)</OpenApiInfoTitle>
 		<OpenApiInfoVersion Condition="'$(OpenApiInfoVersion)' == ''">$(Version)</OpenApiInfoVersion>
 		<OpenApiInfoDescription Condition="'$(OpenApiInfoDescription)' == ''">$(Description)</OpenApiInfoDescription>

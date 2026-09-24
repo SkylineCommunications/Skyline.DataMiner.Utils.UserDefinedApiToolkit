@@ -7,8 +7,8 @@ This project provides the `OpenApiTask` MSBuild task used by
 to generate an OpenAPI 3.0 specification from a compiled controller assembly.
 
 It reflects over the built assembly (via `MetadataLoadContext`) to discover `[ApiController]` classes
-and their `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpPatch]`/`[HttpDelete]` actions, and produces an `openapi.yaml`
-(or `.json`) document describing routes, parameters, and response schemas.
+and their `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpPatch]`/`[HttpDelete]` actions, and produces an `openapi.json`
+(or `.yaml`) document describing routes, parameters, and response schemas.
 
 > **Note**
 > This project is **not** published as a standalone NuGet package (`GeneratePackageOnBuild` is

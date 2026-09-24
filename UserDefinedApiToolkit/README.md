@@ -103,12 +103,12 @@ dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 
 ### Generating an OpenAPI specification
 
-Add the following to your API project's `.csproj` to generate an `openapi.yaml` (or `.json`) file in your build output whenever you build:
+Add the following to your API project's `.csproj` to generate an `openapi.json` (or `.yaml`) file in your build output whenever you build:
 
 ```xml
 <PropertyGroup>
   <GenerateOpenApi>True</GenerateOpenApi>
-  <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
+  <OpenApiFormat>json</OpenApiFormat> <!-- json (default) or yaml -->
   <OpenApiInfoTitle>Sample User API</OpenApiInfoTitle> <!-- optional (default to '$(MSBuildProjectName)') -->
   <OpenApiInfoVersion>1.0.0</OpenApiInfoVersion> <!-- optional (default to '$(Version)') -->
   <OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription> <!-- optional (default to '$(Description)') -->
@@ -194,4 +194,3 @@ A unique catalog of 7000+ connectors already exists. In addition, you can levera
 ## About Skyline Communications
 
 At Skyline Communications, we deal in world-class solutions that are deployed by leading companies around the globe. Check out [our proven track record](https://aka.dataminer.services/about-skyline) and see how we make our customers' lives easier by empowering them to take their operations to the next level.
-

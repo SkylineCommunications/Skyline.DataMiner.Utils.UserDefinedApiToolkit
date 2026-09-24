@@ -114,12 +114,12 @@ injection, converters, results, and OpenAPI options.
 
 ### Generating an OpenAPI specification
 
-Add the following to your API project's `.csproj` to generate an `openapi.yaml` (or `.json`) file in your build output whenever you build:
+Add the following to your API project's `.csproj` to generate an `openapi.json` (or `.yaml`) file in your build output whenever you build:
 
 ```xml
 <PropertyGroup>
   <GenerateOpenApi>True</GenerateOpenApi>
-  <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
+  <OpenApiFormat>json</OpenApiFormat> <!-- json (default) or yaml -->
   <OpenApiInfoTitle>Sample User API</OpenApiInfoTitle> <!-- optional (default to '$(MSBuildProjectName)') -->
   <OpenApiInfoVersion>1.0.0</OpenApiInfoVersion> <!-- optional (default to '$(Version)') -->
   <OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription> <!-- optional (default to '$(Description)') -->
