@@ -21,10 +21,9 @@
 		<!--Testing-->
 		<PackageVersion Include="MSTest" Version="4.4.1" />
 		<PackageVersion Include="FluentAssertions" Version="7.2.2" />
-		<PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
 		<PackageVersion Include="Skyline.DataMiner.Utils.DOM" Version="10.6.1.1" />
-		<PackageVersion Include="Verify.MSTest" Version="32.0.0" />
 		<!--Analyzers-->
+		<PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0" />
 		<PackageVersion Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2" />
 		<PackageVersion Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="2.2.3" />
 		<PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />

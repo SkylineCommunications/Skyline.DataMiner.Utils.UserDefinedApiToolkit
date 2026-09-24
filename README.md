@@ -196,6 +196,11 @@ public class MyController : ControllerBase
 - Solution file: `Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx` (target framework `net48`).
 - Build: `dotnet build .\Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx -c Release`
 - Test: `dotnet test .\UserDefinedApiToolkit.Tests\UserDefinedApiToolkit.Tests.csproj`
+- Public API changes are tracked by `Microsoft.CodeAnalysis.PublicApiAnalyzers` in
+  `UserDefinedApiToolkit\PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`. Add reviewed
+  changes to `Unshipped` during development and promote them to `Shipped` when releasing.
+  Analyzer diagnostics fail builds for undocumented APIs, and the API test fails when
+  `Unshipped` still contains entries.
 
 ## About DataMiner
 
