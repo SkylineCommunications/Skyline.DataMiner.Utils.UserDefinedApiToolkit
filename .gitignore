@@ -19,5 +19,3 @@ _git2_*
 MigrationBackup
 *.user
 Artifacts/*
-
-*.received.txt

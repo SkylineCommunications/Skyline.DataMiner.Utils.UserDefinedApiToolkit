@@ -1,0 +1,184 @@
+#nullable enable
+abstract Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.GetObjectData(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpDeleteAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpGetAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPutAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
+override Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>.ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.ApiContext() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.DefaultInputConverter.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.DefaultOutputConverter.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.InputConverters.get -> System.Collections.Generic.IReadOnlyList<Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter!>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.OutputConverters.get -> System.Collections.Generic.IReadOnlyList<Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter!>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.Request.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext.Response.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiControllerAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiControllerAttribute.ApiControllerAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>.ApiResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult! inner) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>.ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>.ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.BuilderExtensions
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ConsumesAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ConsumesAttribute.ConsumesAttribute(string! contentType, params string![]! additionalContentTypes) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ConsumesAttribute.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.ApiContext.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.BadRequest() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.BadRequest<T>(T error) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Conflict() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Conflict<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.ControllerBase() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Created() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Created<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Forbid() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Forbid<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.InternalServerError() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.InternalServerError<T>(T error) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.NoContent() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.NotFound() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.NotFound<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Ok() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Ok<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Request.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Response.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.ServiceUnavailable() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.ServiceUnavailable<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.StatusCode(int statusCode) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.StatusCode<T>(int statusCode, T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Unauthorized() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.Unauthorized<T>(T value) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.UnprocessableEntity() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.UnprocessableEntity<T>(T error) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.AmbiguousRouteException
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.AmbiguousRouteException.AmbiguousRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.AmbiguousRouteException.AmbiguousRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! message) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.AmbiguousRouteException.AmbiguousRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! message, System.Exception! innerException) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.AmbiguousRouteException.Context.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidControllerException
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidControllerException.InvalidControllerException() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidControllerException.InvalidControllerException(string! message) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidControllerException.InvalidControllerException(string! message, System.Exception! innerException) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidControllerException.InvalidControllerException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.Context.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! parameterName, string! rawValue, System.Type! targetType) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! parameterName, string! rawValue, System.Type! targetType, string! message) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.InvalidParameterException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! parameterName, string! rawValue, System.Type! targetType, string! message, System.Exception! innerException) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.InvalidParameterException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.ParameterName.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.RawValue.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.TargetType.get -> System.Type!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidRouteException
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidRouteException.InvalidRouteException() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidRouteException.InvalidRouteException(string! message) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidRouteException.InvalidRouteException(string! message, System.Exception! innerException) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidRouteException.InvalidRouteException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.NoRouteException
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.NoRouteException.Context.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.NoRouteException.NoRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.NoRouteException.NoRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! message) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.NoRouteException.NoRouteException(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, string! message, System.Exception! innerException) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromBodyAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromBodyAttribute.FromBodyAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromQueryAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromQueryAttribute.FromQueryAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromQueryAttribute.Name.get -> string?
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromQueryAttribute.Name.set -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromRouteAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromRouteAttribute.FromRouteAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromRouteAttribute.Name.get -> string?
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.FromRouteAttribute.Name.set -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpDeleteAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpDeleteAttribute.HttpDeleteAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpDeleteAttribute.HttpDeleteAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpGetAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpGetAttribute.HttpGetAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpGetAttribute.HttpGetAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpMethodAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpMethodAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.Template.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute.HttpPatchAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute.HttpPatchAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute.HttpPostAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute.HttpPostAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPutAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPutAttribute.HttpPutAttribute() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPutAttribute.HttpPutAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IAccessor<T>
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IAccessor<T>.SetValue(T value) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IAccessor<T>.Value.get -> T
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult.ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter.CanConvertInput(System.Type! type) -> bool
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter.ConvertInput(string! input, System.Type! type) -> object?
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter.InputMediaType.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter.CanConvertOutput(System.Type! type) -> bool
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter.ConvertOutput(object? output, System.Type! type) -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter.OutputMediaType.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IUserDefinedApi
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IUserDefinedApi.Run(Skyline.DataMiner.Automation.IEngine! engine, Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput! apiTriggerInput) -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.CanConvertInput(System.Type! type) -> bool
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.CanConvertOutput(System.Type! type) -> bool
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.ConvertInput(string! input, System.Type! type) -> object?
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.ConvertOutput(object? output, System.Type! type) -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.InputMediaType.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.NewtonsoftConverter() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.NewtonsoftConverter.OutputMediaType.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>.ObjectResult(int statusCode, T value) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>.Value.get -> T
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.CanConvertInput(System.Type! type) -> bool
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.CanConvertOutput(System.Type! type) -> bool
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.ConvertInput(string! input, System.Type! type) -> object?
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.ConvertOutput(object? output, System.Type! type) -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.InputMediaType.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.OutputMediaType.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.PlainTextConverter.PlainTextConverter() -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesAttribute.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesAttribute.ProducesAttribute(string! contentType, params string![]! additionalContentTypes) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(int statusCode) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(System.Type! responseType, int statusCode) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ResponseType.get -> System.Type?
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.StatusCode.get -> int
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.RouteAttribute
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.RouteAttribute.RouteAttribute(string! template) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.RouteAttribute.Template.get -> string!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult.StatusCode.get -> int
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult.StatusCodeResult(int statusCode) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApi
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApi.Run(Skyline.DataMiner.Automation.IEngine! engine, Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput! apiTriggerInput) -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerOutput!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.AddController(System.Type! controllerType) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.AddController<TController>() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.AddInputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter! converter) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.AddOutputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter! converter) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.Build() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.IUserDefinedApi!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>! configure) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.WithDefaultInputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter! converter) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder.WithDefaultOutputConverter(Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter! converter) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>.implicit operator Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>!(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<TError>! result) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>.implicit operator Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>!(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<TSuccess>! result) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>.implicit operator Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>!(Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult! result) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess, TError>!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>.implicit operator Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>!(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<TSuccess>! result) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>.implicit operator Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>!(Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult! result) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiResult<TSuccess>!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.BuilderExtensions.AddControllers(this Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder! builder) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.BuilderExtensions.AddControllersFromAssembly(this Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder! builder, System.Reflection.Assembly! assembly) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApi.CreateBuilder() -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.UserDefinedApiBuilder!
+virtual Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.DefaultInputConverter.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter!
+virtual Skyline.DataMiner.Utils.UserDefinedApiToolkit.ControllerBase.DefaultOutputConverter.get -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.IOutputConverter!
+virtual Skyline.DataMiner.Utils.UserDefinedApiToolkit.StatusCodeResult.ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
