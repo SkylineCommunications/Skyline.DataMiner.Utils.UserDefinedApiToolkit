@@ -8,7 +8,7 @@ consumer project builds. Add these properties to the consuming `.csproj`:
 ```xml
 <PropertyGroup>
 	<GenerateOpenApi>True</GenerateOpenApi>
-	<OpenApiFormat>yaml</OpenApiFormat>
+	<OpenApiFormat>json</OpenApiFormat>
 	<OpenApiInfoTitle>Items API</OpenApiInfoTitle>
 	<OpenApiInfoVersion>1.0.0</OpenApiInfoVersion>
 	<OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription>
@@ -21,7 +21,7 @@ Configuration properties:
 | Property | Values/default | Description |
 | --- | --- | --- |
 | `GenerateOpenApi` | `True` to enable | Runs the generator after the build. |
-| `OpenApiFormat` | `yaml` | Output format; `yaml` or `json`. |
+| `OpenApiFormat` | `json` | Output format; `json` or `yaml`. |
 | `OpenApiInfoTitle` | Project name | API title in the generated document. |
 | `OpenApiInfoVersion` | `$(Version)` | API version in the generated document. |
 | `OpenApiInfoDescription` | Empty | Optional global API description in the generated document. Markdown is preserved. |
