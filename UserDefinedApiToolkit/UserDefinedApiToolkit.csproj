@@ -28,6 +28,7 @@
 		<Deterministic>false</Deterministic>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017;RS0024;RS0025;RS0036;RS0037;RS0041;RS0048;RS0050</WarningsAsErrors>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -45,19 +46,12 @@
 		     is packed, without adding it (or its dependencies) as a compile/runtime reference of this
 		     library. Its output is bundled into this package's "tasks/" folder below instead of being
 		     shipped as a separate NuGet package. -->
-		<ProjectReference Include="..\UserDefinedApiToolkit.Build\UserDefinedApiToolkit.Build.csproj"
-						  ReferenceOutputAssembly="false"
-						  PrivateAssets="all"
-						  SkipGetTargetFrameworkProperties="true"
-						  Private="false" />
+		<ProjectReference Include="..\UserDefinedApiToolkit.Build\UserDefinedApiToolkit.Build.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" SkipGetTargetFrameworkProperties="true" Private="false" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<!-- MSBuild .targets file that wires up the OpenApiTask when a consumer sets <GenerateOpenApi>True</GenerateOpenApi>. -->
-		<None Include="build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets"
-			  Pack="true"
-			  PackagePath="build\"
-			  Visible="true" />
+		<None Include="build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets" Pack="true" PackagePath="build\" Visible="true" />
 	</ItemGroup>
 
 	<!-- Item wildcards below must be evaluated at target-execution time (not project-load time),
@@ -66,20 +60,15 @@
 	     assembly and its runtime dependencies are guaranteed to be present on disk by then. -->
 	<Target Name="_AddOpenApiTaskFilesToPackage" BeforeTargets="_GetPackageFiles">
 		<ItemGroup>
-			<None Include="$(RootDir)\UserDefinedApiToolkit.Build\bin\$(Configuration)\netstandard2.0\*.dll"
-				  Pack="true"
-				  PackagePath="tasks\netstandard2.0\"
-				  Visible="false" />
-			<None Include="$(RootDir)\UserDefinedApiToolkit.Build\bin\$(Configuration)\netstandard2.0\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.deps.json"
-				  Pack="true"
-				  PackagePath="tasks\netstandard2.0\"
-				  Visible="false" />
+			<None Include="$(RootDir)\UserDefinedApiToolkit.Build\bin\$(Configuration)\netstandard2.0\*.dll" Pack="true" PackagePath="tasks\netstandard2.0\" Visible="false" />
+			<None Include="$(RootDir)\UserDefinedApiToolkit.Build\bin\$(Configuration)\netstandard2.0\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.deps.json" Pack="true" PackagePath="tasks\netstandard2.0\" Visible="false" />
 		</ItemGroup>
 	</Target>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
+		<PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
 		<PackageReference Include="Newtonsoft.Json" />
 		<PackageReference Include="Skyline.DataMiner.Dev.Automation" />
 	</ItemGroup>

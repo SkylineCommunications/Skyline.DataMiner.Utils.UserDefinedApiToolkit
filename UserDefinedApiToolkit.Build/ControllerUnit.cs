@@ -28,6 +28,17 @@
 			return attr?.ConstructorArguments[0].Value as string ?? "/";
 		}
 
+		public string GetTagName()
+		{
+			var controllerName = ControllerType.Name;
+			if (controllerName.EndsWith("Controller"))
+			{
+				controllerName = controllerName.Substring(0, controllerName.Length - "Controller".Length);
+			}
+
+			return controllerName;
+		}
+
 		/// <summary>
 		/// Gets the combined route for a specific action method: the controller's <c>[Route]</c>
 		/// template joined with the method's <c>[Http*]</c> template (e.g. controller
@@ -41,6 +52,29 @@
 			var controllerRoute = GetRoute();
 			var methodTemplate = GetMethodTemplate(method);
 			return CombineRoutes(controllerRoute, methodTemplate);
+		}
+
+		public ClassDocs? GetClassDocs()
+		{
+			if (XmlDocs is null)
+			{
+				return null;
+			}
+
+			var memberId = BuildMemberId(ControllerType);
+			var memberElement = XmlDocs
+				.Descendants("member")
+				.FirstOrDefault(m => m.Attribute("name")?.Value == memberId);
+
+			if (memberElement is null)
+			{
+				return null;
+			}
+
+			return new ClassDocs
+			{
+				Summary = memberElement.Element("summary")?.Value?.Trim(),
+			};
 		}
 
 		public MethodDocs? GetMethodDocs(MethodInfo method)
@@ -120,7 +154,15 @@
 			return $"{left}/{right}";
 		}
 
-		private string BuildMemberId(MethodInfo method)
+		private static string BuildMemberId(Type classType)
+		{
+			var typeName = classType!.FullName;
+			var memberId = $"T:{typeName}";
+
+			return memberId;
+		}
+
+		private static string BuildMemberId(MethodInfo method)
 		{
 			var typeName = method.DeclaringType!.FullName;
 			var paramTypes = method.GetParameters()

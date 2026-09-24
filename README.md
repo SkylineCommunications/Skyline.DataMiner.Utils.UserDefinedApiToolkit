@@ -120,10 +120,13 @@ Add the following to your API project's `.csproj` to generate an `openapi.yaml` 
 <PropertyGroup>
   <GenerateOpenApi>True</GenerateOpenApi>
   <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
+  <OpenApiInfoTitle>Sample User API</OpenApiInfoTitle> <!-- optional (default to '$(MSBuildProjectName)') -->
+  <OpenApiInfoVersion>1.0.0</OpenApiInfoVersion> <!-- optional (default to '$(Version)') -->
+  <OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription> <!-- optional (default to '$(Description)') -->
 </PropertyGroup>
 ```
 
-The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions.
+The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions and controllers.
 
 ### Path variables
 
@@ -193,6 +196,11 @@ public class MyController : ControllerBase
 - Solution file: `Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx` (target framework `net48`).
 - Build: `dotnet build .\Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx -c Release`
 - Test: `dotnet test .\UserDefinedApiToolkit.Tests\UserDefinedApiToolkit.Tests.csproj`
+- Public API changes are tracked by `Microsoft.CodeAnalysis.PublicApiAnalyzers` in
+  `UserDefinedApiToolkit\PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`. Add reviewed
+  changes to `Unshipped` during development and promote them to `Shipped` when releasing.
+  Analyzer diagnostics fail builds for undocumented APIs, and the API test fails when
+  `Unshipped` still contains entries.
 
 ## About DataMiner
 

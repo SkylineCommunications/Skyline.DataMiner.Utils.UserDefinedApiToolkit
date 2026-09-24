@@ -33,7 +33,7 @@
 			}
 		}
 
-		private static OpenApiTask CreateTask(string outputPath, string format = "yaml")
+		private static OpenApiTask CreateTask(string outputPath, string format = "yaml", string? description = null)
 		{
 			// The test assembly itself contains [ApiController] fixtures (e.g. SampleController,
 			// Controller_GET), so it can be used directly as the target assembly to analyze.
@@ -53,9 +53,17 @@
 				OutputPath = outputPath,
 				ProjectName = "UserDefinedApiToolkit.Tests",
 				ProjectVersion = "1.0.0",
+				ProjectDescription = description,
 				References = references,
 				Format = format,
 			};
+		}
+
+		private static string GetInfoSection(string content)
+		{
+			var infoStart = content.IndexOf("\"info\"", StringComparison.Ordinal);
+			var serversStart = content.IndexOf("\"servers\"", infoStart, StringComparison.Ordinal);
+			return content.Substring(infoStart, serversStart - infoStart);
 		}
 
 		[TestMethod]
@@ -103,6 +111,58 @@
 
 			content.Should().Contain("UserDefinedApiToolkit.Tests");
 			content.Should().Contain("1.0.0");
+		}
+
+		[TestMethod]
+		public void Execute_SetsDescriptionInJsonDocumentInfo()
+		{
+			const string description = "This is a **global** description.\nSecond line with \"quotes\" and Unicode: café.";
+			var task = CreateTask(_outputPath, "json", description);
+
+			task.Execute().Should().BeTrue();
+
+			var content = File.ReadAllText(Path.Combine(_outputPath, "openapi", "openapi.json"));
+			var info = GetInfoSection(content);
+			info.Should().Contain("\"description\"");
+			info.Should().Contain("This is a **global** description.");
+			info.Should().Contain("\\nSecond line with \\\"quotes\\\" and Unicode: café.");
+		}
+
+		[TestMethod]
+		public void Execute_SetsDescriptionInYamlDocumentInfo()
+		{
+			const string description = "This is a **global** description.\nSecond line with Unicode: café.";
+			var task = CreateTask(_outputPath, "yaml", description);
+
+			task.Execute().Should().BeTrue();
+
+			var content = File.ReadAllText(Path.Combine(_outputPath, "openapi", "openapi.yaml"));
+			content.Should().Contain("description: \"This is a **global** description.\\nSecond line with Unicode: café.\"");
+		}
+
+		[TestMethod]
+		public void Execute_WithoutDescription_OmitsDescriptionFromDocumentInfo()
+		{
+			var task = CreateTask(_outputPath, "json");
+
+			task.Execute().Should().BeTrue();
+
+			var content = File.ReadAllText(Path.Combine(_outputPath, "openapi", "openapi.json"));
+			var info = GetInfoSection(content);
+			info.Should().NotContain("\"description\"");
+		}
+
+		[TestMethod]
+		public void Execute_WithoutDescriptionInYaml_OmitsDescriptionFromDocumentInfo()
+		{
+			var task = CreateTask(_outputPath, "yaml");
+
+			task.Execute().Should().BeTrue();
+
+			var content = File.ReadAllText(Path.Combine(_outputPath, "openapi", "openapi.yaml"));
+			var infoEnd = content.IndexOf("servers:", StringComparison.Ordinal);
+			var info = content.Substring(0, infoEnd);
+			info.Should().NotContain("description:");
 		}
 
 		[TestMethod]

@@ -1,6 +1,8 @@
 ﻿namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build.OpenApi
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 	using System.Reflection;
 
 	using Microsoft.OpenApi;
@@ -16,6 +18,9 @@
 
 		public void HandleController(OpenApiDocument doc, ControllerUnit unit, IBuildLogger? log = null)
 		{
+			var classDocs = unit.GetClassDocs();
+			RegisterTag(doc, unit.GetTagName(), classDocs?.Summary);
+
 			foreach (var method in unit.ControllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
 			{
 				if (!_operationProvider.TryGetOperations(unit, method, out var httpMethod, out var operation))
@@ -35,6 +40,22 @@
 
 				pathItem.AddOperation(httpMethod, operation);
 			}
+		}
+
+		private static void RegisterTag(OpenApiDocument doc, string tagName, string? description)
+		{
+			doc.Tags ??= new HashSet<OpenApiTag>();
+
+			if (doc.Tags.Any(tag => String.Equals(tag.Name, tagName, StringComparison.Ordinal)))
+			{
+				return;
+			}
+
+			doc.Tags.Add(new OpenApiTag
+			{
+				Name = tagName,
+				Description = description,
+			});
 		}
 	}
 }
