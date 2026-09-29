@@ -9,6 +9,7 @@
 
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Routes;
 
@@ -207,7 +208,7 @@
 		/// <returns>The resolved value, converted to <paramref name="param"/>'s type, or the parameter's default value when the query key is absent.</returns>
 		public static object HandleQueryParam(ApiContext context, ParameterInfo param, string queryName)
 		{
-			if (context.Request.QueryParameters.TryGetValue(queryName, out var value))
+			if (TryGetQueryValue(context.Request.QueryParameters, queryName, out var value))
 			{
 				if (param.ParameterType == typeof(string))
 				{
@@ -229,6 +230,40 @@
 			{
 				throw new InvalidOperationException($"Could not handle the parameter '{param.Name}'.");
 			}
+		}
+
+		/// <summary>
+		/// Looks up a query parameter value by name, matching the key case-insensitively so that,
+		/// for example, <c>?Id=1</c> binds to a parameter named <c>id</c>. Shared by
+		/// <see cref="RouteHandlerInfo.GetRank"/> (presence check) and <see cref="HandleQueryParam"/>
+		/// (value resolution) so both agree on which key matches.
+		/// </summary>
+		/// <param name="queryParameters">The request's query parameters, or <see langword="null"/>.</param>
+		/// <param name="name">The query key to look up.</param>
+		/// <param name="value">The matched value, or <see langword="null"/> when no key matches.</param>
+		/// <returns><see langword="true"/> if a matching key was found; otherwise, <see langword="false"/>.</returns>
+		public static bool TryGetQueryValue(IQueryParameters? queryParameters, string name, out string? value)
+		{
+			value = null;
+			if (queryParameters is null)
+			{
+				return false;
+			}
+
+			if (queryParameters.TryGetValue(name, out value))
+			{
+				return true;
+			}
+
+			foreach (var key in queryParameters.GetAllKeys())
+			{
+				if (String.Equals(key, name, StringComparison.OrdinalIgnoreCase))
+				{
+					return queryParameters.TryGetValue(key, out value);
+				}
+			}
+
+			return false;
 		}
 	}
 }

@@ -158,8 +158,9 @@
 					case ParameterBindingSource.Query:
 					default:
 						// binding.Name is guaranteed non-null for the Query source (see
-						// ParameterBinder.Classify).
-						if (context.Request.QueryParameters?.ContainsKey(binding.Name!) ?? false)
+						// ParameterBinder.Classify). Matched case-insensitively, consistent with
+						// ParameterBinder.HandleQueryParam.
+						if (ParameterBinder.TryGetQueryValue(context.Request.QueryParameters, binding.Name!, out _))
 						{
 							score += 2; // Exact matches are preferred
 						}
