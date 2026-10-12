@@ -96,7 +96,7 @@ dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 | Feature | Description |
 | --- | --- |
 | **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]`, path variables (`{id}`) |
-| **Parameter binding** | `[FromRoute]`, `[FromQuery]` and `[FromBody]` |
+| **Parameter binding** | `[FromRoute]`, `[FromQuery]` (including repeated values to typed collections) and `[FromBody]` |
 | **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
 | **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
 | **OpenAPI generation** | Generates an OpenAPI 3.0 spec from your controllers at build time |
@@ -160,6 +160,10 @@ template — mismatches throw `InvalidRouteException` eagerly, at `Build()` time
 
 `[FromQuery]` also supports a `Name` override (e.g. `[FromQuery(Name = "q")]`), for the same
 use case with query string parameters.
+
+Repeated query-string keys can bind to arrays and typed collection types such as `List<T>`,
+`IEnumerable<T>`, `ICollection<T>`, `ISet<T>`, `HashSet<T>`, and `Collection<T>`. Scalar
+parameters use the first value, while collection parameters receive all values.
 
 Route constraints (e.g. `{id:int}`) and catch-all/wildcard segments (e.g. `{*path}`) are not
 supported.

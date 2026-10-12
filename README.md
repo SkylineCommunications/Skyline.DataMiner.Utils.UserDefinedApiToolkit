@@ -169,6 +169,12 @@ template — mismatches throw `InvalidRouteException` eagerly, at `Build()` time
 `[FromQuery]` also supports a `Name` override (e.g. `[FromQuery(Name = "q")]`), for the same
 use case with query string parameters.
 
+Repeated query-string keys can bind to arrays and typed collection types such as `List<T>`,
+`IEnumerable<T>`, `ICollection<T>`, `ISet<T>`, `HashSet<T>`, and `Collection<T>`. Scalar
+parameters use the first value, while collection parameters receive all values. Use `[FromQuery]`
+when the parameter should be included in the generated OpenAPI document; unattributed query
+parameters can still bind at runtime but are not emitted in the OpenAPI document.
+
 Route constraints (e.g. `{id:int}`) and catch-all/wildcard segments (e.g. `{*path}`) are not
 supported.
 
