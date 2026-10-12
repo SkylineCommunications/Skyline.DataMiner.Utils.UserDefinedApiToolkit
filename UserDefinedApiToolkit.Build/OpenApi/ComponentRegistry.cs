@@ -84,8 +84,9 @@
 		private bool IsGenericCollection(Type type)
 		{
 			return type.IsGenericType &&
-				   type.GetInterfaces()
-					   .Any(i => i.IsGenericType && i.GetGenericTypeDefinition().Name == "IEnumerable`1");
+				(type.GetGenericTypeDefinition().Name == "IEnumerable`1" ||
+				 type.GetInterfaces()
+					 .Any(i => i.IsGenericType && i.GetGenericTypeDefinition().Name == "IEnumerable`1"));
 		}
 	}
 }
