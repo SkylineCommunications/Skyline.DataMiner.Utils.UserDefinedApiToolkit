@@ -57,6 +57,12 @@
 
 			if (targetType.IsArray)
 			{
+				if (targetType.GetArrayRank() != 1)
+				{
+					elementType = null!;
+					return false;
+				}
+
 				elementType = targetType.GetElementType()!;
 				return true;
 			}
@@ -90,17 +96,44 @@
 		/// <returns><c>true</c> if the conversion succeeded; otherwise <c>false</c>.</returns>
 		public static bool TryConvert(IReadOnlyList<string> rawValues, Type targetType, out object? value)
 		{
+			return TryConvert(rawValues, targetType, out value, out _);
+		}
+
+		/// <summary>
+		/// Attempts to convert <paramref name="rawValues"/> to <paramref name="targetType"/>.
+		/// </summary>
+		/// <param name="rawValues">The raw string values to convert.</param>
+		/// <param name="targetType">The type to convert <paramref name="rawValues"/> to.</param>
+		/// <param name="value">The converted value when this method returns <c>true</c>; otherwise <c>null</c>.</param>
+		/// <param name="failure">The conversion failure when this method returns <c>false</c>; otherwise <c>null</c>.</param>
+		/// <returns><c>true</c> if the conversion succeeded; otherwise <c>false</c>.</returns>
+		public static bool TryConvert(
+			IReadOnlyList<string> rawValues,
+			Type targetType,
+			out object? value,
+			out ConversionFailure? failure)
+		{
 			if (targetType is null)
 			{
 				throw new ArgumentNullException(nameof(targetType));
 			}
 
-			if (TryGetCollectionElementType(targetType, out var elementType))
+			if (TryGetCollectionElementType(targetType, out _))
 			{
-				return TryConvertCollection(rawValues, targetType, out value);
+				return TryConvertCollection(rawValues, targetType, out value, out failure);
 			}
 
-			return TryConvert(rawValues.FirstOrDefault(), targetType, out value);
+			var rawValue = rawValues.FirstOrDefault();
+			if (TryConvert(rawValue, targetType, out value))
+			{
+				failure = null;
+				return true;
+			}
+
+			failure = rawValue is null
+				? null
+				: new ConversionFailure(rawValue, targetType);
+			return false;
 		}
 
 		/// <summary>
@@ -157,11 +190,13 @@
 		/// <param name="rawValues">The raw string values to convert.</param>
 		/// <param name="targetType">The type to convert the raw values to.</param>
 		/// <param name="value">The converted collection when this method returns <c>true</c>; otherwise <c>null</c>.</param>
+		/// <param name="failure">The conversion failure when this method returns <c>false</c>; otherwise <c>null</c>.</param>
 		/// <returns><c>true</c> if the conversion succeeded; otherwise <c>false</c>.</returns>
 		private static bool TryConvertCollection(
 			IReadOnlyList<string> rawValues,
 			Type targetType,
-			out object? value)
+			out object? value,
+			out ConversionFailure? failure)
 		{
 			// Determine the element type of the target collection type.
 			if (!TryGetCollectionElementType(
@@ -169,6 +204,7 @@
 				out var elementType))
 			{
 				value = null;
+				failure = null;
 				return false;
 			}
 
@@ -187,6 +223,7 @@
 						out var convertedValue))
 					{
 						value = null;
+						failure = new ConversionFailure(rawValues[i], elementType, i);
 						return false;
 					}
 
@@ -194,10 +231,11 @@
 				}
 
 				value = array;
+				failure = null;
 				return true;
 			}
 
-			// Supports List<T> and all of it's sub interfaces (e.g. IList<T>, ICollection<T>, IEnumerable<T>, IReadOnlyList<T>).
+			// Supports List<T> and all of its subinterfaces (e.g. IList<T>, ICollection<T>, IEnumerable<T>, IReadOnlyList<T>).
 			var listType = typeof(List<>).MakeGenericType(elementType);
 			if (targetType.IsAssignableFrom(listType))
 			{
@@ -205,7 +243,8 @@
 					listType,
 					elementType,
 					rawValues,
-					out value);
+					out value,
+					out failure);
 			}
 
 			// Supports ISet<T> and HashSet<T>.
@@ -216,7 +255,8 @@
 					setType,
 					elementType,
 					rawValues,
-					out value);
+					out value,
+					out failure);
 			}
 
 			// Supports concrete ICollection<T> implementations, including types with an explicitly implemented Add method.
@@ -232,11 +272,13 @@
 						targetType,
 						elementType,
 						rawValues,
-						out value);
+						out value,
+						out failure);
 				}
 			}
 
 			value = null;
+			failure = null;
 			return false;
 		}
 
@@ -247,12 +289,14 @@
 		/// <param name="elementType">The type of the elements in the collection.</param>
 		/// <param name="rawValues">The raw string values to convert and add to the collection.</param>
 		/// <param name="value">The created and populated collection when this method returns <c>true</c>; otherwise <c>null</c>.</param>
+		/// <param name="failure">The conversion failure when this method returns <c>false</c>; otherwise <c>null</c>.</param>
 		/// <returns><c>true</c> if the collection was successfully created and populated; otherwise <c>false</c>.</returns>
 		private static bool TryCreateAndPopulateCollection(
 			Type collectionType,
 			Type elementType,
 			IReadOnlyList<string> rawValues,
-			out object? value)
+			out object? value,
+			out ConversionFailure? failure)
 		{
 			try
 			{
@@ -261,6 +305,7 @@
 				if (collection is null)
 				{
 					value = null;
+					failure = null;
 					return false;
 				}
 
@@ -272,17 +317,20 @@
 				if (addMethod is null)
 				{
 					value = null;
+					failure = null;
 					return false;
 				}
 
-				foreach (var rawValue in rawValues)
+				for (var i = 0; i < rawValues.Count; i++)
 				{
+					var rawValue = rawValues[i];
 					if (!TryConvert(
 						rawValue,
 						elementType,
 						out var convertedValue))
 					{
 						value = null;
+						failure = new ConversionFailure(rawValue, elementType, i);
 						return false;
 					}
 
@@ -292,21 +340,25 @@
 				}
 
 				value = collection;
+				failure = null;
 				return true;
 			}
 			catch (ArgumentException)
 			{
 				value = null;
+				failure = null;
 				return false;
 			}
 			catch (MissingMethodException)
 			{
 				value = null;
+				failure = null;
 				return false;
 			}
 			catch (TargetInvocationException)
 			{
 				value = null;
+				failure = null;
 				return false;
 			}
 		}

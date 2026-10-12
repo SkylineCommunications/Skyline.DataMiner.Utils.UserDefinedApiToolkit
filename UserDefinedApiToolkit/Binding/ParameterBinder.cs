@@ -4,7 +4,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
-	using System.Runtime.Remoting.Contexts;
 
 	using Microsoft.Extensions.DependencyInjection;
 
@@ -241,9 +240,17 @@
 				return value;
 			}
 
-			if (!StringValueConverter.TryConvert(values, param.ParameterType, out var converted))
+			if (!StringValueConverter.TryConvert(
+				values,
+				param.ParameterType,
+				out var converted,
+				out var failure))
 			{
-				throw new InvalidParameterException(context, param.Name, value, param.ParameterType);
+				throw new InvalidParameterException(
+					context,
+					param.Name,
+					failure?.RawValue ?? value,
+					param.ParameterType);
 			}
 
 			return converted!;
