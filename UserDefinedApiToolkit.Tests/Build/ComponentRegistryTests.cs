@@ -90,6 +90,19 @@
 		}
 
 		[TestMethod]
+		public void GetOrRegisterSchema_IEnumerable_ReturnsArraySchema()
+		{
+			var doc = CreateDocument();
+			var registry = new ComponentRegistry(doc);
+
+			var schema = registry.GetOrRegisterSchema(typeof(IEnumerable<string>));
+
+			schema.Should().BeOfType<OpenApiSchema>();
+			((OpenApiSchema)schema!).Type.Should().Be(JsonSchemaType.Array);
+			((OpenApiSchema)schema!).Items.Should().NotBeNull();
+		}
+
+		[TestMethod]
 		public void GetOrRegisterSchema_Null_ReturnsNull()
 		{
 			var doc = CreateDocument();

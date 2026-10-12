@@ -24,6 +24,12 @@
 			return Ok(new SampleDto());
 		}
 
+		[HttpGet("names")]
+		public IApiResult GetNames([FromQuery] IEnumerable<string> names)
+		{
+			return Ok(names);
+		}
+
 		[HttpPost]
 		[Consumes("application/json")]
 		public ApiResult<SampleDto, string> Create([FromBody] SampleDto dto)
