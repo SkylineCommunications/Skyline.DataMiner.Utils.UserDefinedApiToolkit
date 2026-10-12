@@ -72,7 +72,7 @@ Action parameters are resolved in this order:
 | `ApiContext`, `IEngine`, `IConnection`, `IServiceProvider` | Provided by the toolkit |
 | `[FromBody]` | The raw request body, converted by an input converter |
 | `[FromRoute]` | A `{placeholder}` in the combined controller/action route |
-| `[FromQuery]` | A query-string value |
+| `[FromQuery]` | A query-string value, or repeated values converted to a typed collection |
 | Unattributed parameter matching a route placeholder | The matching route value |
 | Other registered service types | Dependency injection |
 | Other parameters | A query-string value with the parameter name |
@@ -97,10 +97,30 @@ public IApiResult Search([FromQuery(Name = "q")] string searchTerm)
 }
 ```
 
-Route and query values are converted from strings using the built-in type conversion support.
-Common primitive types, enums, `Guid`, dates, and nullable values are supported. Invalid values
-raise `InvalidParameterException`. A missing query parameter can use a C# default value, for
-example `int page = 1`.
+Repeated query-string keys can bind to arrays and typed collection types such as `List<T>`,
+`IEnumerable<T>`, `ICollection<T>`, `ISet<T>`, `HashSet<T>`, and `Collection<T>`. Each value is
+converted using the same scalar conversion rules as a single query value:
+
+```csharp
+[HttpGet]
+public IApiResult Search(
+	[FromQuery] IEnumerable<string> names,
+	[FromQuery] int[] ids)
+{
+	return Ok(new { names, ids });
+}
+```
+
+The preceding action can handle a request such as:
+
+```text
+/v1/search?names=Andi&names=Tamer&ids=5&ids=10
+```
+
+For scalar parameters, the first value is used when a query key occurs more than once. For
+collection parameters, all values are converted and included in the collection. Common primitive
+types, enums, `Guid`, dates, and nullable values are supported. Invalid values raise
+`InvalidParameterException`.
 
 Every route placeholder must have a matching parameter. Conversely, a `[FromRoute]` parameter must
 refer to a placeholder in the route. These configuration errors are reported as

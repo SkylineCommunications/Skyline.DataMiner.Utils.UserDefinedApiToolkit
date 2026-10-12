@@ -14,7 +14,8 @@
 - **`NoRouteException` at runtime:** the HTTP method or request path does not match any action, or
   a required query parameter is missing.
 - **`InvalidParameterException` at runtime:** a route, query, or body value cannot be converted
-  to the declared parameter type.
+  to the declared parameter type. For collection query parameters, this also applies when one of
+  the repeated values cannot be converted to the collection element type.
 
 ## Installer packaging
 
