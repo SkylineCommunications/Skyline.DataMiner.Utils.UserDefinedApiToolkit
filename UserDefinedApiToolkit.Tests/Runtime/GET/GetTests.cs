@@ -100,6 +100,7 @@
 		[TestMethod]
 		[DataRow("/v1/get?limit=5", 5)]
 		[DataRow("/v1/get?limit=-3", -3)]
+		[DataRow("/v1/get?limit=5&limit=10", 5)]
 		public void GetTest_With_IntQueryParam_ConvertsToInt(string route, int expected)
 		{
 			// Arrange
@@ -151,12 +152,35 @@
 		}
 
 		[TestMethod]
+		[DataRow("/v1/get/ArrayInt?list=5&list=not-a-number")]
+		public void GetTest_With_InvalidListIntQueryParam_ReportsInvalidValue(string route)
+		{
+			// Arrange
+			var engine = new EngineMock();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_GET>()
+				.Build();
+
+			var url = Utility.ParseUrl(route);
+
+			// Act
+			var act = () => api.Run(engine, new ApiTriggerInput
+			{
+				Route = url.Path,
+				RequestMethod = RequestMethod.Get,
+				QueryParameters = new QueryParameters(url.QueryParameters),
+			});
+
+			// Assert
+			act.Should().Throw<InvalidParameterException>()
+				.Which.RawValue.Should().Be("not-a-number");
+		}
+
+		[TestMethod]
 		[DataRow("/v1/get/ListString?list=Andi&list=Tamer", "Andi", "Tamer")]
 		[DataRow("/v1/get/ArrayString?list=Andi&list=Tamer", "Andi", "Tamer")]
 		[DataRow("/v1/get/IEnumerableString?list=Andi&list=Tamer", "Andi", "Tamer")]
 		[DataRow("/v1/get/ICollectionString?list=Andi&list=Tamer", "Andi", "Tamer")]
-		[DataRow("/v1/get/ISetString?list=Andi&list=Tamer", "Andi", "Tamer")]
-		[DataRow("/v1/get/HashSetString?list=Andi&list=Tamer", "Andi", "Tamer")]
 		[DataRow("/v1/get/CollectionString?list=Andi&list=Tamer", "Andi", "Tamer")]
 		public void GetTest_With_ListStringQueryParam(string route, params string[] names)
 		{
@@ -188,8 +212,6 @@
 		[DataRow("/v1/get/ArrayInt?list=5&list=10", 5, 10)]
 		[DataRow("/v1/get/IEnumerableInt?list=5&list=10", 5, 10)]
 		[DataRow("/v1/get/ICollectionInt?list=5&list=10", 5, 10)]
-		[DataRow("/v1/get/ISetInt?list=5&list=10", 5, 10)]
-		[DataRow("/v1/get/HashSetInt?list=5&list=10", 5, 10)]
 		[DataRow("/v1/get/CollectionInt?list=5&list=10", 5, 10)]
 		public void GetTest_With_ListIntQueryParam(string route, params int[] names)
 		{
@@ -214,6 +236,66 @@
 			act.Should().NotThrow();
 			result.Should().NotBeNull();
 			result.ResponseBody.Should().Be(JsonConvert.SerializeObject(names));
+		}
+
+		[TestMethod]
+		[DataRow("/v1/get/ISetString?list=Andi&list=Tamer", "Andi", "Tamer")]
+		[DataRow("/v1/get/HashSetString?list=Andi&list=Tamer", "Andi", "Tamer")]
+		public void GetTest_With_SetStringQueryParam(string route, params string[] names)
+		{
+			// Arrange
+			var engine = new EngineMock();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_GET>()
+				.Build();
+
+			var url = Utility.ParseUrl(route);
+
+			// Act
+			var result = new ApiTriggerOutput();
+			var act = () => result = api.Run(engine, new ApiTriggerInput
+			{
+				Route = url.Path,
+				RequestMethod = RequestMethod.Get,
+				QueryParameters = new QueryParameters(url.QueryParameters),
+			});
+
+			// Assert
+			act.Should().NotThrow();
+			result.Should().NotBeNull();
+			JsonConvert.DeserializeObject<string[]>(result.ResponseBody)
+				.Should()
+				.BeEquivalentTo(names);
+		}
+
+		[TestMethod]
+		[DataRow("/v1/get/ISetInt?list=5&list=10", 5, 10)]
+		[DataRow("/v1/get/HashSetInt?list=5&list=10", 5, 10)]
+		public void GetTest_With_SetIntQueryParam(string route, params int[] names)
+		{
+			// Arrange
+			var engine = new EngineMock();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<TestFiles.Controller_GET>()
+				.Build();
+
+			var url = Utility.ParseUrl(route);
+
+			// Act
+			var result = new ApiTriggerOutput();
+			var act = () => result = api.Run(engine, new ApiTriggerInput
+			{
+				Route = url.Path,
+				RequestMethod = RequestMethod.Get,
+				QueryParameters = new QueryParameters(url.QueryParameters),
+			});
+
+			// Assert
+			act.Should().NotThrow();
+			result.Should().NotBeNull();
+			JsonConvert.DeserializeObject<int[]>(result.ResponseBody)
+				.Should()
+				.BeEquivalentTo(names);
 		}
 	}
 }
