@@ -33,7 +33,7 @@
 			}
 		}
 
-		private static OpenApiTask CreateTask(string outputPath, string format = "yaml")
+		private static OpenApiTask CreateTask(string outputPath, string? format = null, string? description = null)
 		{
 			// The test assembly itself contains [ApiController] fixtures (e.g. SampleController,
 			// Controller_GET), so it can be used directly as the target assembly to analyze.
@@ -46,7 +46,7 @@
 				.Select(location => (ITaskItem)new TaskItem(location))
 				.ToArray();
 
-			return new OpenApiTask
+			var task = new OpenApiTask
 			{
 				BuildEngine = new BuildEngineStub(),
 				TargetPath = targetPath,
@@ -54,8 +54,25 @@
 				ProjectName = "UserDefinedApiToolkit.Tests",
 				ProjectVersion = "1.0.0",
 				References = references,
-				Format = format,
 			};
+
+			if (format != null)
+			{
+				task.Format = format;
+			}
+
+			return task;
+		}
+
+		[TestMethod]
+		public void Execute_DefaultFormat_GeneratesOpenApiJsonFile()
+		{
+			var task = CreateTask(_outputPath);
+
+			task.Execute().Should().BeTrue();
+
+			var filePath = Path.Combine(_outputPath, "openapi", "openapi.json");
+			File.Exists(filePath).Should().BeTrue();
 		}
 
 		[TestMethod]

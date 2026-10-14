@@ -39,18 +39,18 @@
 		public ITaskItem[] References { get; set; }
 
 		/// <summary>
-		/// Gets or sets the format of the OpenAPI output file. Default is "yaml".<br/>
+		/// Gets or sets the format of the OpenAPI output file. Default is "json".<br/>
 		/// Options:<br/>
 		/// json - Outputs the OpenAPI specification in JSON format.<br/>
 		/// yaml - Outputs the OpenAPI specification in YAML format.
 		/// </summary>
-		public string Format { get; set; } = "yaml";
+		public string Format { get; set; } = "json";
 
 		/// <summary>
 		/// Gets or sets the path to the XML documentation file containing the assembly's documentation comments.
 		/// Used to populate descriptions in the OpenAPI specification.
 		/// </summary>
-		public string DocumentationFile { get; set; }
+		public string? DocumentationFile { get; set; }
 
 		/// <summary>
 		/// Executes the OpenAPI generation task.
