@@ -41,6 +41,23 @@
 		}
 
 		[TestMethod]
+		public void TryGetOperations_IEnumerableQueryParameter_GeneratesArraySchema()
+		{
+			var provider = CreateProvider();
+			var unit = new ControllerUnit(typeof(TestFiles.SampleController), null);
+			var method = typeof(TestFiles.SampleController).GetMethod(nameof(TestFiles.SampleController.GetNames));
+
+			var success = provider.TryGetOperations(unit, method!, out _, out var operation);
+
+			success.Should().BeTrue();
+			var parameter = operation.Parameters.Should().ContainSingle(
+				p => p.Name == "names" && p.In == ParameterLocation.Query).Subject;
+			var schema = parameter.Schema.Should().BeOfType<OpenApiSchema>().Subject;
+			schema.Type.Should().Be(JsonSchemaType.Array);
+			schema.Items.Should().NotBeNull();
+		}
+
+		[TestMethod]
 		public void TryGetOperations_ApiResultOfTwo_GeneratesSuccessAndErrorResponses()
 		{
 			var provider = CreateProvider();

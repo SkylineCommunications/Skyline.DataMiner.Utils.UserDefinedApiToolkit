@@ -70,7 +70,11 @@
 			for (int i = 0; i < MethodParameters.Length; i++)
 			{
 				var param = MethodParameters[i];
-				var binding = ParameterBinder.Classify(param, routeValues, services);
+				var binding = ParameterBinder.Classify(
+					param,
+					routeValues,
+					services,
+					context.Request.QueryParameters);
 
 				// binding.Name is only ever null for the Framework/DependencyInjection sources
 				// (see ParameterBinder.Classify), so the null-forgiving operator below is safe.
@@ -113,7 +117,15 @@
 			// below, so they're weighted far above the maximum plausible query/body score.
 			var score = match.LiteralMatches * 100;
 
-			var bindings = MethodParameters.Select(p => (Param: p, Binding: ParameterBinder.Classify(p, routeValues, services))).ToList();
+			var bindings = MethodParameters
+				.Select(p => (
+					Param: p,
+					Binding: ParameterBinder.Classify(
+						p,
+						routeValues,
+						services,
+						context.Request.QueryParameters)))
+				.ToList();
 
 			var hasBodyParam = bindings.Any(b => b.Binding.Source == ParameterBindingSource.Body);
 			if (!hasBodyParam &&

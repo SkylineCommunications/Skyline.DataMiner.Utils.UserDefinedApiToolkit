@@ -9,6 +9,7 @@
 
 	using Skyline.DataMiner.Automation;
 	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Routes;
 
@@ -29,7 +30,11 @@
 		/// <param name="routeValues">The route placeholder values captured for the current request.</param>
 		/// <param name="services">The service provider used to detect dependency-injectable parameters.</param>
 		/// <returns>The <see cref="ParameterBinding"/> describing how <paramref name="param"/> should be resolved.</returns>
-		public static ParameterBinding Classify(ParameterInfo param, IReadOnlyDictionary<string, string> routeValues, IServiceProvider services)
+		public static ParameterBinding Classify(
+			ParameterInfo param,
+			IReadOnlyDictionary<string, string> routeValues,
+			IServiceProvider services,
+			IQueryParameters? queryParameters = null)
 		{
 			if (IsFrameworkProvidedType(param.ParameterType))
 			{
@@ -59,6 +64,16 @@
 			if (routeValues.ContainsKey(param.Name))
 			{
 				return new ParameterBinding(ParameterBindingSource.Route, param.Name);
+			}
+
+			// Microsoft.Extensions.DependencyInjection treats IEnumerable<T> as a resolvable
+			// service even when no explicit registration exists. Prefer query binding when a
+			// collection query parameter is present, while retaining dependency injection for
+			// IEnumerable<T> parameters when the query key is absent.
+			if (queryParameters?.ContainsKey(param.Name!) == true
+				&& StringValueConverter.TryGetCollectionElementType(param.ParameterType, out _))
+			{
+				return new ParameterBinding(ParameterBindingSource.Query, param.Name);
 			}
 
 			// Dependency injection: an unattributed, non-route-matching parameter that the DI
@@ -207,28 +222,38 @@
 		/// <returns>The resolved value, converted to <paramref name="param"/>'s type, or the parameter's default value when the query key is absent.</returns>
 		public static object HandleQueryParam(ApiContext context, ParameterInfo param, string queryName)
 		{
-			if (context.Request.QueryParameters.TryGetValue(queryName, out var value))
+			if (!context.Request.QueryParameters.TryGetValues(queryName, out var values))
 			{
-				if (param.ParameterType == typeof(string))
+				if (param.HasDefaultValue)
 				{
-					return value;
+					return param.DefaultValue!;
 				}
-
-				if (!StringValueConverter.TryConvert(value, param.ParameterType, out var converted))
+				else
 				{
-					throw new InvalidParameterException(context, param.Name, value, param.ParameterType);
+					throw new InvalidOperationException($"Could not find a query parameter for '{param.Name}'.");
 				}
+			}
 
-				return converted!;
-			}
-			else if (param.HasDefaultValue)
+			var value = values.FirstOrDefault();
+			if (param.ParameterType == typeof(string))
 			{
-				return param.DefaultValue;
+				return value;
 			}
-			else
+
+			if (!StringValueConverter.TryConvert(
+				values,
+				param.ParameterType,
+				out var converted,
+				out var failure))
 			{
-				throw new InvalidOperationException($"Could not handle the parameter '{param.Name}'.");
+				throw new InvalidParameterException(
+					context,
+					param.Name,
+					failure?.RawValue ?? value,
+					param.ParameterType);
 			}
+
+			return converted!;
 		}
 	}
 }

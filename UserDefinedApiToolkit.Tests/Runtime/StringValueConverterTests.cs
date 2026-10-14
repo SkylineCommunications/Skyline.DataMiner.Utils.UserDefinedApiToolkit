@@ -141,5 +141,38 @@
 			// Assert
 			act.Should().Throw<ArgumentNullException>();
 		}
+
+		[TestMethod]
+		public void TryConvert_MultidimensionalArray_ReturnsFalse()
+		{
+			// Act
+			var success = StringValueConverter.TryConvert(
+				new[] { "1" },
+				typeof(int[,]),
+				out var value);
+
+			// Assert
+			success.Should().BeFalse();
+			value.Should().BeNull();
+		}
+
+		[TestMethod]
+		public void TryConvert_InvalidCollectionValue_ReturnsFailureDetails()
+		{
+			// Act
+			var success = StringValueConverter.TryConvert(
+				new[] { "5", "not-a-number" },
+				typeof(int[]),
+				out var value,
+				out var failure);
+
+			// Assert
+			success.Should().BeFalse();
+			value.Should().BeNull();
+			failure.Should().NotBeNull();
+			failure!.RawValue.Should().Be("not-a-number");
+			failure.TargetType.Should().Be(typeof(int));
+			failure.ValueIndex.Should().Be(1);
+		}
 	}
 }
