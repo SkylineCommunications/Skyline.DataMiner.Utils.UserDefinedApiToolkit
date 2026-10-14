@@ -246,11 +246,16 @@
 				out var converted,
 				out var failure))
 			{
+				var failedValue = failure?.RawValue ?? value;
+				var failedType = failure?.TargetType ?? param.ParameterType;
+				var indexDescription = failure?.ValueIndex is int index ? $" at index {index}" : String.Empty;
+
 				throw new InvalidParameterException(
 					context,
 					param.Name,
-					failure?.RawValue ?? value,
-					param.ParameterType);
+					failedValue,
+					failedType,
+					$"Could not convert value '{failedValue}'{indexDescription} for parameter '{param.Name}' to type '{failedType.Name}'.");
 			}
 
 			return converted!;
