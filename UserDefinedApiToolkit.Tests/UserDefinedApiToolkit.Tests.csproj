@@ -27,7 +27,6 @@
 
 	<ItemGroup>
 		<None Include="$(RootDir)\UserDefinedApiToolkit\build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="$(RootDir)\UserDefinedApiToolkit.Installer\build\Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets" CopyToOutputDirectory="PreserveNewest" />
 		<EmbeddedResource Include="$(RootDir)\UserDefinedApiToolkit\PublicAPI.Unshipped.txt">
 			<Link>PublicAPI.Unshipped.txt</Link>
 			<LogicalName>PublicAPI.Unshipped.txt</LogicalName>
