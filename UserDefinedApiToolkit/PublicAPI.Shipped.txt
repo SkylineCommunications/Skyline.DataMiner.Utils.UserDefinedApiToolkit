@@ -3,7 +3,6 @@ abstract Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpM
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.GetObjectData(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpDeleteAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpGetAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
-override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPutAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.ObjectResult<T>.ExecuteResult(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
@@ -103,9 +102,6 @@ Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpMethodAttribute() -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpMethodAttribute(string! template) -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.Template.get -> string!
-Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute
-Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute.HttpPatchAttribute() -> void
-Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPatchAttribute.HttpPatchAttribute(string! template) -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute.HttpPostAttribute() -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpPostAttribute.HttpPostAttribute(string! template) -> void

@@ -53,6 +53,7 @@
 				OutputPath = outputPath,
 				ProjectName = "UserDefinedApiToolkit.Tests",
 				ProjectVersion = "1.0.0",
+				ProjectDescription = description,
 				References = references,
 			};
 
@@ -62,6 +63,13 @@
 			}
 
 			return task;
+		}
+
+		private static string GetInfoSection(string content)
+		{
+			var infoStart = content.IndexOf("\"info\"", StringComparison.Ordinal);
+			var serversStart = content.IndexOf("\"servers\"", infoStart, StringComparison.Ordinal);
+			return content.Substring(infoStart, serversStart - infoStart);
 		}
 
 		[TestMethod]

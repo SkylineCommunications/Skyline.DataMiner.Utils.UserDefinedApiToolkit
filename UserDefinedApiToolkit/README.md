@@ -107,8 +107,11 @@ Add the following to your API project's `.csproj` to generate an `openapi.json` 
 
 ```xml
 <PropertyGroup>
-  <GenerateOpenApi>True</GenerateOpenApi>
+  <GenerateOpenApi>True</GenerateOpenApi>  
   <OpenApiFormat>json</OpenApiFormat> <!-- json (default) or yaml -->
+  <OpenApiInfoTitle>Sample User API</OpenApiInfoTitle> <!-- optional (default to '$(MSBuildProjectName)') -->
+  <OpenApiInfoVersion>1.0.0</OpenApiInfoVersion> <!-- optional (default to '$(Version)') -->
+  <OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription> <!-- optional (default to '$(Description)') -->
 </PropertyGroup>
 ```
 

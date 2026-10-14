@@ -1,5 +1,7 @@
 ﻿namespace UserDefinedApiToolkit.Tests.Build
 {
+	using System.Xml.Linq;
+
 	using FluentAssertions;
 
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Build;

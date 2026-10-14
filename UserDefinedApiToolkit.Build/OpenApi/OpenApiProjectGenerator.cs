@@ -33,6 +33,7 @@
 		/// <param name="documentationFile">Optional path to the assembly's XML documentation file.</param>
 		/// <param name="projectName">Used as the OpenAPI document title.</param>
 		/// <param name="projectVersion">Used as the OpenAPI document version.</param>
+		/// <param name="projectDescription">Description of the OpenAPI document.</param>
 		/// <param name="log">Optional callback used to report progress/diagnostics.</param>
 		/// <returns>The generated <see cref="OpenApiDocument"/> for the assembly's user-defined API controllers.</returns>
 		public static OpenApiDocument CreateDocument(
@@ -41,6 +42,7 @@
 			string? documentationFile,
 			string projectName,
 			string projectVersion,
+			string? projectDescription,
 			IBuildLogger? log = null)
 		{
 			var allPaths = references.Append(targetPath);
@@ -62,6 +64,10 @@
 			var doc = OpenApiGenerator.Create(controllers, xmlDocs, log);
 			doc.Info.Title = projectName ?? "User Defined API";
 			doc.Info.Version = projectVersion ?? "1.0.0";
+			if (!string.IsNullOrWhiteSpace(projectDescription))
+			{
+				doc.Info.Description = projectDescription;
+			}
 
 			return doc;
 		}

@@ -41,6 +41,40 @@
 			return CombineRoutes(controllerRoute, methodTemplate);
 		}
 
+		public string GetTagName()
+		{
+			var controllerName = ControllerType.Name;
+			if (controllerName.EndsWith("Controller"))
+			{
+				controllerName = controllerName.Substring(0, controllerName.Length - "Controller".Length);
+			}
+
+			return controllerName;
+		}
+
+		public ClassDocs? GetClassDocs()
+		{
+			if (XmlDocs is null)
+			{
+				return null;
+			}
+
+			var memberId = BuildMemberId(ControllerType);
+			var memberElement = XmlDocs
+				.Descendants("member")
+				.FirstOrDefault(m => m.Attribute("name")?.Value == memberId);
+
+			if (memberElement is null)
+			{
+				return null;
+			}
+
+			return new ClassDocs
+			{
+				Summary = memberElement.Element("summary")?.Value?.Trim(),
+			};
+		}
+
 		private static string? GetMethodTemplate(MethodInfo method)
 		{
 			var attr = method.GetCustomAttributesData()
@@ -87,6 +121,25 @@
 			}
 
 			return $"{left}/{right}";
+		}
+
+		private static string BuildMemberId(Type classType)
+		{
+			var typeName = classType!.FullName;
+			var memberId = $"T:{typeName}";
+
+			return memberId;
+		}
+
+		private static string BuildMemberId(MethodInfo method)
+		{
+			var typeName = method.DeclaringType!.FullName;
+			var paramTypes = method.GetParameters()
+				.Select(p => p.ParameterType.FullName ?? p.ParameterType.Name);
+			var paramStr = String.Join(",", paramTypes);
+			return String.IsNullOrEmpty(paramStr)
+				? $"M:{typeName}.{method.Name}"
+				: $"M:{typeName}.{method.Name}({paramStr})";
 		}
 	}
 }
