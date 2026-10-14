@@ -16,10 +16,11 @@ behavior (attributes, builder methods, return helpers).
 - Run all tests: `dotnet test .\UserDefinedApiToolkit.Tests\UserDefinedApiToolkit.Tests.csproj`
 - Run a single test/class: add `--filter "FullyQualifiedName~ControllerTests"` (or a specific
   test name) to the `dotnet test` command above.
-- Never run the `ApiChanges`/`PublicChanges` test (`UserDefinedApiToolkit.Tests/API/ApiChanges.cs`)
-  during feature development — it's a public-API-surface snapshot test the repo owner runs and
-  accepts manually at the end of a feature. Exclude it, e.g.
-  `--filter "FullyQualifiedName!~ApiChanges"`.
+- The main library uses `Microsoft.CodeAnalysis.PublicApiAnalyzers` with
+  `UserDefinedApiToolkit/PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt` to track its
+  public API surface. Treat new API analyzer diagnostics as intentional API changes that need
+  review; promote reviewed entries from `Unshipped` to `Shipped` when releasing. The
+  `PublicApiTests` test must also pass with no entries left in `Unshipped`.
 - Test project uses MSTest + FluentAssertions, targets `PlatformTarget x86` (the main project
   builds `AnyCPU`, so an `MSB3270` architecture-mismatch warning during build/test is expected
   and not a regression).

@@ -96,19 +96,22 @@ dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 | Feature | Description |
 | --- | --- |
 | **Attribute routing** | `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`/`[HttpPut]`/`[HttpDelete]`, path variables (`{id}`) |
-| **Parameter binding** | `[FromRoute]`, `[FromQuery]` and `[FromBody]` |
+| **Parameter binding** | `[FromRoute]`, `[FromQuery]` (including repeated values to typed collections) and `[FromBody]` |
 | **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
 | **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
 | **OpenAPI generation** | Generates an OpenAPI 3.0 spec from your controllers at build time |
 
 ### Generating an OpenAPI specification
 
-Add the following to your API project's `.csproj` to generate an `openapi.yaml` (or `.json`) file in your build output whenever you build:
+Add the following to your API project's `.csproj` to generate an `openapi.json` (or `.yaml`) file in your build output whenever you build:
 
 ```xml
 <PropertyGroup>
-  <GenerateOpenApi>True</GenerateOpenApi>
-  <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
+  <GenerateOpenApi>True</GenerateOpenApi>  
+  <OpenApiFormat>json</OpenApiFormat> <!-- json (default) or yaml -->
+  <OpenApiInfoTitle>Sample User API</OpenApiInfoTitle> <!-- optional (default to '$(MSBuildProjectName)') -->
+  <OpenApiInfoVersion>1.0.0</OpenApiInfoVersion> <!-- optional (default to '$(Version)') -->
+  <OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription> <!-- optional (default to '$(Description)') -->
 </PropertyGroup>
 ```
 
@@ -157,6 +160,10 @@ template — mismatches throw `InvalidRouteException` eagerly, at `Build()` time
 
 `[FromQuery]` also supports a `Name` override (e.g. `[FromQuery(Name = "q")]`), for the same
 use case with query string parameters.
+
+Repeated query-string keys can bind to arrays and typed collection types such as `List<T>`,
+`IEnumerable<T>`, `ICollection<T>`, `ISet<T>`, `HashSet<T>`, and `Collection<T>`. Scalar
+parameters use the first value, while collection parameters receive all values.
 
 Route constraints (e.g. `{id:int}`) and catch-all/wildcard segments (e.g. `{*path}`) are not
 supported.

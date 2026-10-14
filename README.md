@@ -111,16 +111,19 @@ dotnet add package Skyline.DataMiner.Utils.UserDefinedApiToolkit
 
 ### Generating an OpenAPI specification
 
-Add the following to your API project's `.csproj` to generate an `openapi.yaml` (or `.json`) file in your build output whenever you build:
+Add the following to your API project's `.csproj` to generate an `openapi.json` (or `.yaml`) file in your build output whenever you build:
 
 ```xml
 <PropertyGroup>
-  <GenerateOpenApi>True</GenerateOpenApi>
-  <OpenApiFormat>yaml</OpenApiFormat> <!-- yaml (default) or json -->
+  <GenerateOpenApi>True</GenerateOpenApi>  
+  <OpenApiFormat>json</OpenApiFormat> <!-- json (default) or yaml -->
+  <OpenApiInfoTitle>Sample User API</OpenApiInfoTitle> <!-- optional (default to '$(MSBuildProjectName)') -->
+  <OpenApiInfoVersion>1.0.0</OpenApiInfoVersion> <!-- optional (default to '$(Version)') -->
+  <OpenApiInfoDescription>This is a **global description** of the API.</OpenApiInfoDescription> <!-- optional (default to '$(Description)') -->
 </PropertyGroup>
 ```
 
-The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions.
+The generated document includes every controller's routes, HTTP methods, request/response schemas, and (when `GenerateDocumentationFile` is enabled) the XML doc comments on your actions and controllers.
 
 ### Path variables
 
@@ -166,6 +169,12 @@ template — mismatches throw `InvalidRouteException` eagerly, at `Build()` time
 `[FromQuery]` also supports a `Name` override (e.g. `[FromQuery(Name = "q")]`), for the same
 use case with query string parameters.
 
+Repeated query-string keys can bind to arrays and typed collection types such as `List<T>`,
+`IEnumerable<T>`, `ICollection<T>`, `ISet<T>`, `HashSet<T>`, and `Collection<T>`. Scalar
+parameters use the first value, while collection parameters receive all values. Use `[FromQuery]`
+when the parameter should be included in the generated OpenAPI document; unattributed query
+parameters can still bind at runtime but are not emitted in the OpenAPI document.
+
 Route constraints (e.g. `{id:int}`) and catch-all/wildcard segments (e.g. `{*path}`) are not
 supported.
 
@@ -190,6 +199,11 @@ public class MyController : ControllerBase
 - Solution file: `Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx` (target framework `net48`).
 - Build: `dotnet build .\Skyline.DataMiner.Utils.UserDefinedApiToolkit.slnx -c Release`
 - Test: `dotnet test .\UserDefinedApiToolkit.Tests\UserDefinedApiToolkit.Tests.csproj`
+- Public API changes are tracked by `Microsoft.CodeAnalysis.PublicApiAnalyzers` in
+  `UserDefinedApiToolkit\PublicAPI.Shipped.txt` and `PublicAPI.Unshipped.txt`. Add reviewed
+  changes to `Unshipped` during development and promote them to `Shipped` when releasing.
+  Analyzer diagnostics fail builds for undocumented APIs, and the API test fails when
+  `Unshipped` still contains entries.
 
 ## About DataMiner
 
