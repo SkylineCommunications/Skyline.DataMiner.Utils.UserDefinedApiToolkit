@@ -42,6 +42,7 @@ The supported HTTP attributes are `[HttpGet]`, `[HttpPost]`, `[HttpPut]`, `[Http
 `[HttpDelete]`. An optional template on the method attribute is appended to the controller route:
 
 ```csharp
+[ApiController]
 [Route("v1/items")]
 public class ItemsController : ControllerBase
 {

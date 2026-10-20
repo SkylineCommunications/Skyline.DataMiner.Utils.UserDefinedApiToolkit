@@ -20,27 +20,22 @@ using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
 /// </summary>
 public static class Script
 {
-	private static IUserDefinedApi _api;
+	// Build the API once and cache it; AddControllers() scans the calling assembly and
+	// registers every public ControllerBase implementation decorated with [Route].
+	private static Lazy<IUserDefinedApi> _api = new Lazy<IUserDefinedApi>(() => UserDefinedApi.CreateBuilder()
+		.AddControllers()
+		.ConfigureServices(services => services.AddScoped<IUserRepository, UserRepository>())
+		.Build());
 
 	/// <summary>
 	///     The Script entry point.
 	/// </summary>
-	/// <param name="engine">Link with SLScripting process.</param>
+	/// <param name="engine">Link with SLAutomation process.</param>
 	/// <param name="requestData">The incoming API request.</param>
 	[AutomationEntryPoint(AutomationEntryPointType.Types.OnApiTrigger)]
 	public static ApiTriggerOutput OnApiTrigger(IEngine engine, ApiTriggerInput requestData)
 	{
-		// Build the API once and cache it; AddControllers() scans the calling assembly and
-		// registers every public ControllerBase implementation decorated with [Route].
-		if (_api is null)
-		{
-			_api = UserDefinedApi.CreateBuilder()
-				.AddControllers()
-				.ConfigureServices(services => services.AddScoped<IUserRepository, UserRepository>())
-				.Build();
-		}
-
-		return _api.Run(engine, requestData);
+		return _api.Value.Run(engine, requestData);
 	}
 }
 
