@@ -16,6 +16,12 @@
 - **`InvalidParameterException` at runtime:** a route, query, or body value cannot be converted
   to the declared parameter type. For collection query parameters, this also applies when one of
   the repeated values cannot be converted to the collection element type.
+- **Exceptions are still escaping from `Run`:** register an exception handler with
+  `UseExceptionHandler<TExceptionHandler>()`. Exception handling is opt-in so existing APIs keep
+  their current behavior unless they enable the middleware.
+- **The exception handler does not see a failure:** ensure it is registered before middleware that
+  should be covered. It catches failures from middleware and endpoint execution registered after
+  it.
 
 ## Installer packaging
 

@@ -28,6 +28,7 @@
 		private readonly List<IOutputConverter> _outputConverters = new();
 
 		private readonly IServiceCollection _services;
+		private bool _exceptionHandlerConfigured;
 
 		internal UserDefinedApiBuilder()
 		{
@@ -109,6 +110,42 @@
 				_handlers.Add(routeInfo);
 			}
 
+			return this;
+		}
+
+		/// <summary>
+		/// Adds a middleware type to the API request pipeline.
+		/// </summary>
+		/// <typeparam name="TMiddleware">The middleware type to add.</typeparam>
+		/// <returns>The same builder instance, for chaining.</returns>
+		public UserDefinedApiBuilder UseMiddleware<TMiddleware>()
+			where TMiddleware : class, IApiMiddleware
+		{
+			_services.AddScoped<IApiMiddleware, TMiddleware>();
+			return this;
+		}
+
+		/// <summary>
+		/// Adds exception handling middleware to the API request pipeline at the current registration
+		/// position. Exceptions from middleware and endpoint execution registered after this call
+		/// are handled.
+		/// </summary>
+		/// <typeparam name="TExceptionHandler">The exception handler type to use.</typeparam>
+		/// <returns>The same builder instance, for chaining.</returns>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown when exception handling has already been configured.
+		/// </exception>
+		public UserDefinedApiBuilder UseExceptionHandler<TExceptionHandler>()
+			where TExceptionHandler : class, IApiExceptionHandler
+		{
+			if (_exceptionHandlerConfigured)
+			{
+				throw new InvalidOperationException("Only one API exception handler can be configured.");
+			}
+
+			_exceptionHandlerConfigured = true;
+			_services.AddScoped<IApiExceptionHandler, TExceptionHandler>();
+			_services.AddScoped<IApiMiddleware, ExceptionHandlingMiddleware>();
 			return this;
 		}
 
@@ -259,20 +296,18 @@
 			_services.AddScoped(typeof(ILogger<>), typeof(EngineLogger<>));
 			_services.AddScoped<ILogger, EngineLogger>();
 
-			// Build the api
-			var api = new UserDefinedApi(
+			var serviceProvider = _services.BuildServiceProvider(
+				new ServiceProviderOptions
+				{
+					ValidateScopes = true,
+					ValidateOnBuild = true,
+				});
+
+			return new UserDefinedApi(
 				_handlers,
 				_inputConverters,
 				_outputConverters,
-				_services.BuildServiceProvider(
-					new ServiceProviderOptions
-					{
-						ValidateScopes = true,
-						ValidateOnBuild = true,
-					}));
-
-			var serviceProvider = _services.BuildServiceProvider();
-			return new UserDefinedApi(_handlers, _inputConverters, _outputConverters, serviceProvider);
+				serviceProvider);
 		}
 
 		private static void ValidateRouteParameters(RouteHandlerInfo handler)

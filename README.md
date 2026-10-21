@@ -105,6 +105,7 @@ injection, converters, results, and OpenAPI options.
 | **Parameter binding** | `[FromRoute]`, `[FromQuery]` and `[FromBody]` |
 | **Typed results** | `ApiResult<TSuccess>` / `ApiResult<TSuccess, TError>` plus helpers such as `Ok`, `NotFound`, `BadRequest`, `Created`, `Conflict`, `StatusCode`, ... |
 | **Dependency injection** | Built-in DI container via `ConfigureServices` and constructor injection in controllers |
+| **Middleware pipeline** | Synchronous ASP.NET-Core-like middleware for cross-cutting request concerns and global exception handling |
 | **OpenAPI generation** | Generates an OpenAPI 3.0 spec from your controllers at build time |
 
 ### Generating an OpenAPI specification

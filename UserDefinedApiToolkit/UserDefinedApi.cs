@@ -58,19 +58,31 @@
 					OutputConverters = _outputConverters,
 				};
 
-				var route = _routeSelector.SelectRoute(apiContext, scope.ServiceProvider);
-				var controller = route.CreateController(scope.ServiceProvider);
-				controller.ApiContext = apiContext;
-
-				var result = route.Invoke(apiContext, controller, scope.ServiceProvider);
-				if (result is null)
-				{
-					throw new InvalidOperationException("The API action returned a null result.");
-				}
-
-				result.ExecuteResult(apiContext);
+				BuildPipeline(scope.ServiceProvider).Invoke(apiContext);
 				return apiContext.Response;
 			}
+		}
+
+		private ApiPipeline BuildPipeline(IServiceProvider services)
+		{
+			var middleware = new List<IApiMiddleware>(services.GetServices<IApiMiddleware>());
+
+			return new ApiPipeline(middleware, context => ExecuteEndpoint(context, services));
+		}
+
+		private void ExecuteEndpoint(ApiContext context, IServiceProvider services)
+		{
+			var route = _routeSelector.SelectRoute(context, services);
+			var controller = route.CreateController(services);
+			controller.ApiContext = context;
+
+			var result = route.Invoke(context, controller, services);
+			if (result is null)
+			{
+				throw new InvalidOperationException("The API action returned a null result.");
+			}
+
+			result.ExecuteResult(context);
 		}
 	}
 }

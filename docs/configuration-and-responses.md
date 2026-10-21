@@ -20,6 +20,79 @@ The toolkit creates a new DI scope for each request. The controller and scoped s
 resolved from that scope. The `IEngine` and `IConnection` for the current request are available
 through action parameters or through the `ApiContext`/`ControllerBase` request context.
 
+## Middleware
+
+The toolkit supports a synchronous middleware pipeline for cross-cutting request concerns such as
+logging, authorization, validation, and exception handling. Middleware is resolved from the
+request DI scope. Middleware runs in registration order, with the first registered middleware
+being the outermost component. Middleware can be registered with `UseMiddleware<T>()`,
+`UseExceptionHandler<T>()`, or directly through
+`ConfigureServices` as an `IApiMiddleware` service.
+
+```csharp
+_api = UserDefinedApi.CreateBuilder()
+	.AddControllers()
+	.UseMiddleware<RequestLoggingMiddleware>()
+	.UseExceptionHandler<ApiExceptionHandler>()
+	.Build();
+```
+
+Fluent middleware registrations define the explicit pipeline order. Middleware registered through
+`ConfigureServices` as an `IApiMiddleware` is supported, but is appended when the deferred
+configuration callbacks run during `Build()`; it is not interleaved with fluent registrations
+based on the position of the `ConfigureServices` call. Use `UseMiddleware<T>()` or
+`UseExceptionHandler<T>()` when a middleware component needs a precise position.
+
+Middleware can short-circuit a request by not calling `next`:
+
+```csharp
+public sealed class RequestLoggingMiddleware : IApiMiddleware
+{
+	public void Invoke(ApiContext context, ApiRequestDelegate next)
+	{
+		// Log request metadata here.
+		next(context);
+		// Log response metadata here.
+	}
+}
+```
+
+In this example, the logging middleware wraps the exception handler. It can log the original
+request before the handler creates an error response, and inspect the handled response after
+`next` returns. Register `UseExceptionHandler<T>()` before another middleware when that
+middleware's exceptions should be handled. Register a logging middleware after the exception
+handler when it should observe the original exception, catch it, log it, and rethrow it before
+the exception handler converts it into a response.
+
+The pipeline is synchronous because it executes inside a DataMiner Automation API trigger. Do not
+use asynchronous continuations with DataMiner `IEngine` or other request-scoped DataMiner objects.
+
+### Global exception handling
+
+`UseExceptionHandler<T>()` adds exception handling at its registration position. It catches
+exceptions thrown by middleware and endpoint execution registered after it. The handler receives
+the original exception and the current `ApiContext`, then returns the `IApiResult` that should be
+sent to the caller:
+
+```csharp
+public sealed class ApiExceptionHandler : IApiExceptionHandler
+{
+	public IApiResult Handle(Exception exception, ApiContext context)
+	{
+		if (exception is InvalidParameterException)
+		{
+			return new StatusCodeResult(400);
+		}
+
+		return new StatusCodeResult(500);
+	}
+}
+```
+
+The handler should log diagnostic details internally and return stable, non-sensitive responses.
+Do not expose exception messages, stack traces, raw request bodies, credentials, or tokens. Abort
+and timeout exceptions raised by DataMiner are not converted into API responses.
+
 ## Builder configuration
 
 `UserDefinedApi.CreateBuilder()` returns a fluent `UserDefinedApiBuilder`. The main options are:
@@ -35,6 +108,8 @@ through action parameters or through the `ApiContext`/`ControllerBase` request c
 | `WithDefaultOutputConverter(IOutputConverter)` | Replace the default result output converter. |
 | `AddInputConverter(IInputConverter)` | Add an input converter before the default converter. |
 | `AddOutputConverter(IOutputConverter)` | Add an output converter before the default converter. |
+| `UseMiddleware<TMiddleware>()` | Add a middleware component to the request pipeline. |
+| `UseExceptionHandler<TExceptionHandler>()` | Add exception middleware at the current registration position and configure its handler. |
 | `Build()` | Validate the configuration and create the API instance. |
 
 The default converter is `NewtonsoftConverter`, which reads and writes JSON using
