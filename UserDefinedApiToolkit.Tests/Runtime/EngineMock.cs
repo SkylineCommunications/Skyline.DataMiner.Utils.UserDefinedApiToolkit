@@ -23,6 +23,8 @@
 		}
 
 		public event EventHandler<DestroyEventArgs> OnDestroy;
+
+		public List<string> Logs { get; } = new List<string>();
 		public bool IsInteractive { get; } = false;
 		public SLTicketingGateway TicketingGateway { get; }
 		public SLProfileManager ProfileManager { get; }
@@ -95,9 +97,9 @@
 		public double LoadDoubleValue(string name) => throw new NotImplementedException();
 		public string LoadStringValue(string name) => throw new NotImplementedException();
 		public object LoadValue(string name) => throw new NotImplementedException();
-		public void Log(string message, LogType type, int logLevel, string method) => Console.WriteLine($"Log: {message}, Type: {type}, LogLevel: {logLevel}, Method: {method}");
-		public void Log(string message, LogType type, int logLevel) => Console.WriteLine($"Log: {message}, Type: {type}, LogLevel: {logLevel}");
-		public void Log(string message) => Console.WriteLine($"Log: {message}");
+		public void Log(string message, LogType type, int logLevel, string method) => Logs.Add(message);
+		public void Log(string message, LogType type, int logLevel) => Logs.Add(message);
+		public void Log(string message) => Logs.Add(message);
 		public void Log(string message, LogType type, LogLevel logLevel, string method) => throw new NotImplementedException();
 		public MailReportOptions PrepareMailReport(string mailReport) => throw new NotImplementedException();
 		public SubScriptOptions PrepareSubScript(string scriptName) => throw new NotImplementedException();

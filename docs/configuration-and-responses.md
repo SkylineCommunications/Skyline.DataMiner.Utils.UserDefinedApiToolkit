@@ -20,6 +20,30 @@ The toolkit creates a new DI scope for each request. The controller and scoped s
 resolved from that scope. The `IEngine` and `IConnection` for the current request are available
 through action parameters or through the `ApiContext`/`ControllerBase` request context.
 
+### Default registrations
+
+The toolkit adds the following services and components automatically:
+
+| Registration | Lifetime | Purpose |
+| --- | --- | --- |
+| Each registered controller type | Scoped | Creates one controller instance per request. |
+| `IAccessor<IEngine>` | Scoped | Provides the current request's `IEngine` to controllers and services. |
+| `IAccessor<IConnection>` | Scoped | Provides the current request's user `IConnection` to controllers and services. |
+| `ILogger<T>` | Scoped | Writes categorized logs through the current `IEngine`. |
+| `ILogger` | Scoped | Writes uncategorized logs through the current `IEngine`. |
+| `IApiMiddleware` registered with `UseMiddleware<T>()` | Scoped | Adds the middleware to the fluent pipeline in registration order. |
+| `IApiExceptionHandler` and exception middleware | Scoped, opt-in | Handles exceptions from components registered after `UseExceptionHandler<T>()`. |
+
+`IEngine` and `IConnection` themselves are not registered as regular DI services. Inject
+`IAccessor<IEngine>` or `IAccessor<IConnection>` when constructor-injected access is needed.
+Action parameters of those framework types are supplied directly by the toolkit's parameter
+binding.
+
+The toolkit also creates a default `NewtonsoftConverter` for request-body input and result
+output conversion. It is held by the request context rather than registered in the DI container.
+Use `WithDefaultInputConverter`, `WithDefaultOutputConverter`, `AddInputConverter`, or
+`AddOutputConverter` to replace or extend the converter behavior.
+
 ## Middleware
 
 The toolkit supports a synchronous middleware pipeline for cross-cutting request concerns such as
