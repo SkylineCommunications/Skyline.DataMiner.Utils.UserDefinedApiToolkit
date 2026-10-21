@@ -44,6 +44,29 @@ output conversion. It is held by the request context rather than registered in t
 Use `WithDefaultInputConverter`, `WithDefaultOutputConverter`, `AddInputConverter`, or
 `AddOutputConverter` to replace or extend the converter behavior.
 
+For test or integration work that starts with a serialized request, the
+`ApiTriggerInputHelper.Deserialize` workaround creates an `ApiTriggerInput` and reconstructs its
+`IQueryParameters` property. Query parameters can be represented by a string or an array of
+strings:
+
+```json
+{
+  "requestMethod": "Get",
+  "route": "/v1/items",
+  "queryParameters": {
+    "tag": ["one", "two"],
+    "page": "2"
+  }
+}
+```
+
+When the JSON is stored in an Automation script parameter, use the `IEngine` extension directly:
+
+```csharp
+var request = engine.GetApiTriggerInput("ApiInput");
+// Or: var request = engine.GetApiTriggerInput(1);
+```
+
 ## Middleware
 
 The toolkit supports a synchronous middleware pipeline for cross-cutting request concerns such as

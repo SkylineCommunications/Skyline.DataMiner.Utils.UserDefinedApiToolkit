@@ -1,5 +1,10 @@
 #nullable enable
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiTriggerInputHelper
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiTriggerInputHelper.Deserialize(string! json) -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput!
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiRequestDelegate
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.EngineExtensions
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.EngineExtensions.GetApiTriggerInput(this Skyline.DataMiner.Automation.IEngine! engine, int scriptParameterId) -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput!
+static Skyline.DataMiner.Utils.UserDefinedApiToolkit.EngineExtensions.GetApiTriggerInput(this Skyline.DataMiner.Automation.IEngine! engine, string! scriptParameterName) -> Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions.ApiTriggerInput!
 virtual Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiRequestDelegate.Invoke(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> void
 abstract Skyline.DataMiner.Utils.UserDefinedApiToolkit.HttpMethodAttribute.HttpMethod.get -> Skyline.DataMiner.Net.Apps.UserDefinableApis.RequestMethod
 override Skyline.DataMiner.Utils.UserDefinedApiToolkit.Exceptions.InvalidParameterException.GetObjectData(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
