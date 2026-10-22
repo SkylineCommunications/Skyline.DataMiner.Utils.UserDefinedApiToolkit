@@ -4,6 +4,8 @@ namespace UserDefinedApiToolkit.Tests.Runtime
 
 	using FluentAssertions;
 
+	using Newtonsoft.Json;
+
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis;
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
 
@@ -56,6 +58,31 @@ namespace UserDefinedApiToolkit.Tests.Runtime
 
 			// Assert
 			input.QueryParameters.Should().BeNull();
+		}
+
+		[TestMethod]
+		public void Deserialize_WithIso8601QueryParameter_PreservesValue()
+		{
+			// Arrange
+			const string expectedValue = "2024-01-02T10:00:00Z";
+			var json = $"{{\"queryParameters\":{{\"since\":\"{expectedValue}\"}}}}";
+
+			// Act
+			var input = ApiTriggerInputHelper.Deserialize(json);
+
+			// Assert
+			input.QueryParameters!.TryGetValue("since", out var value).Should().BeTrue();
+			value.Should().Be(expectedValue);
+		}
+
+		[TestMethod]
+		public void Deserialize_WithTrailingContent_ThrowsJsonException()
+		{
+			// Act
+			var act = () => ApiTriggerInputHelper.Deserialize("{\"route\":\"/v1/items\"} garbage");
+
+			// Assert
+			act.Should().Throw<JsonException>();
 		}
 
 		[TestMethod]

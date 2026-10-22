@@ -15,6 +15,7 @@
 	{
 		private readonly DomSLNetMessageHandler _messageHandler;
 		private readonly IConnection _connection;
+
 		public EngineMock()
 		{
 			_messageHandler = new DomSLNetMessageHandler();

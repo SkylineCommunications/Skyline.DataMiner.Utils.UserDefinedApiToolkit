@@ -2,13 +2,13 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Linq;
 
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Converters;
 	using Newtonsoft.Json.Linq;
 
 	using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
+	using Skyline.DataMiner.Utils.SecureCoding.SecureSerialization.Json.Newtonsoft;
 
 	/// <summary>
 	/// Provides helpers for creating DataMiner API trigger inputs.
@@ -17,7 +17,12 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 	{
 		private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
 		{
-			Converters = { new StringEnumConverter() },
+			Converters =
+			{
+				new StringEnumConverter(),
+				new QueryParametersConverter(),
+			},
+			DateParseHandling = DateParseHandling.None,
 		};
 
 		/// <summary>
@@ -36,37 +41,8 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 				throw new ArgumentNullException(nameof(json));
 			}
 
-			var jsonObject = JObject.Parse(json);
-			var queryParametersProperty = jsonObject.Properties()
-				.FirstOrDefault(property => String.Equals(
-					property.Name,
-					nameof(ApiTriggerInput.QueryParameters),
-					StringComparison.OrdinalIgnoreCase));
-			var queryParametersToken = queryParametersProperty?.Value;
-			queryParametersProperty?.Remove();
-
-			var input = jsonObject.ToObject<ApiTriggerInput>(JsonSerializer.Create(Settings))
+			return SecureNewtonsoftDeserialization.DeserializeObject<ApiTriggerInput>(json, Settings)
 				?? throw new JsonSerializationException("The API trigger input JSON resolved to null.");
-
-			if (queryParametersToken is null || queryParametersToken.Type == JTokenType.Null)
-			{
-				return input;
-			}
-
-			if (queryParametersToken.Type != JTokenType.Object)
-			{
-				throw new JsonSerializationException(
-					$"The '{nameof(ApiTriggerInput.QueryParameters)}' property must contain a JSON object.");
-			}
-
-			var queryParameters = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-			foreach (var property in queryParametersToken.Children<JProperty>())
-			{
-				queryParameters[property.Name] = DeserializeQueryValues(property.Value, property.Name);
-			}
-
-			input.QueryParameters = new QueryParameters(queryParameters);
-			return input;
 		}
 
 		private static List<string> DeserializeQueryValues(JToken token, string parameterName)
@@ -101,6 +77,48 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 
 			return token.ToObject<string>() ?? throw new JsonSerializationException(
 				$"The query parameter '{parameterName}' contains a null value.");
+		}
+
+		private sealed class QueryParametersConverter : JsonConverter
+		{
+			public override bool CanWrite => false;
+
+			public override bool CanConvert(Type objectType)
+			{
+				return objectType == typeof(IQueryParameters);
+			}
+
+			public override object? ReadJson(
+				JsonReader reader,
+				Type objectType,
+				object? existingValue,
+				JsonSerializer serializer)
+			{
+				if (reader.TokenType == JsonToken.Null)
+				{
+					return null;
+				}
+
+				if (reader.TokenType != JsonToken.StartObject)
+				{
+					throw new JsonSerializationException(
+						$"The '{nameof(ApiTriggerInput.QueryParameters)}' property must contain a JSON object.");
+				}
+
+				var queryParametersToken = JObject.Load(reader);
+				var queryParameters = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+				foreach (var property in queryParametersToken.Properties())
+				{
+					queryParameters[property.Name] = DeserializeQueryValues(property.Value, property.Name);
+				}
+
+				return new QueryParameters(queryParameters);
+			}
+
+			public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+			{
+				throw new NotSupportedException();
+			}
 		}
 	}
 }
