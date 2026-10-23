@@ -1,21 +1,26 @@
 namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 {
 	using System;
+	using System.Collections.Generic;
 
 	using Microsoft.Extensions.Logging;
 
 	using Skyline.DataMiner.Automation;
+	using Skyline.DataMiner.Net.Apps.UserDefinableApis.Actions;
 
 	internal sealed class ExceptionHandlingMiddleware : IApiMiddleware
 	{
-		private readonly IApiExceptionHandler _exceptionHandler;
+		private readonly IServiceProvider _services;
+		private readonly IReadOnlyList<Func<IServiceProvider, IApiExceptionHandler>> _handlerFactories;
 		private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
 		public ExceptionHandlingMiddleware(
-			IApiExceptionHandler exceptionHandler,
+			IServiceProvider services,
+			IReadOnlyList<Func<IServiceProvider, IApiExceptionHandler>> handlerFactories,
 			ILogger<ExceptionHandlingMiddleware> logger)
 		{
-			_exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+			_services = services ?? throw new ArgumentNullException(nameof(services));
+			_handlerFactories = handlerFactories ?? throw new ArgumentNullException(nameof(handlerFactories));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		}
 
@@ -31,6 +36,7 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 				throw new ArgumentNullException(nameof(next));
 			}
 
+			var headers = context.Response.ResponseHeaders.AsDictionary();
 			try
 			{
 				next(context);
@@ -42,13 +48,30 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 			catch (Exception exception)
 			{
 				_logger.LogError("Unhandled API exception: " + exception);
+				ResetOutput(context, headers);
 
 				try
 				{
-					var result = _exceptionHandler.Handle(exception, context)
-						?? throw new InvalidOperationException("The API exception handler returned a null result.");
+					foreach (var handlerFactory in _handlerFactories)
+					{
+						var handler = handlerFactory(_services)
+							?? throw new InvalidOperationException("The API exception handler factory returned null.");
 
-					result.ExecuteResult(context);
+						if (!handler.TryHandle(exception, context, out var result))
+						{
+							continue;
+						}
+
+						if (result is null)
+						{
+							throw new InvalidOperationException("The API exception handler reported the exception as handled without returning a result.");
+						}
+
+						result.ExecuteResult(context);
+						return;
+					}
+
+					new StatusCodeResult(500).ExecuteResult(context);
 				}
 				catch (Exception handlerException) when (IsControlFlowException(handlerException))
 				{
@@ -57,10 +80,25 @@ namespace Skyline.DataMiner.Utils.UserDefinedApiToolkit
 				catch (Exception handlerException)
 				{
 					_logger.LogError("The API exception handler failed: " + handlerException);
-					context.Response.ResponseBody = null;
+					ResetOutput(context, headers);
 					new StatusCodeResult(500).ExecuteResult(context);
 				}
 			}
+		}
+
+		private static void ResetOutput(ApiContext context, Dictionary<string, List<string>> headers)
+		{
+			var newHeaders = new Headers();
+			foreach (var header in headers)
+			{
+				newHeaders.Set(header.Key, header.Value);
+			}
+
+			var response = new ApiTriggerOutput();
+			context.Response.ResponseBody = response.ResponseBody;
+			context.Response.ResponseBodyBytes = response.ResponseBodyBytes;
+			context.Response.ResponseCode = response.ResponseCode;
+			context.Response.ResponseHeaders = newHeaders;
 		}
 
 		private static bool IsControlFlowException(Exception exception)

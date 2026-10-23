@@ -28,7 +28,7 @@ public void Run(IEngine engine)
 
 		engine.AddOrUpdateScriptOutput("response_code", Convert.ToString(result.ResponseCode));
 		engine.AddOrUpdateScriptOutput("response_body", result.ResponseBody);
-		engine.AddOrUpdateScriptOutput("response_body_bytes", Convert.ToBase64String(result.ResponseBodyBytes));
+		engine.AddOrUpdateScriptOutput("response_body_bytes", result.ResponseBodyBytes is null ? String.Empty : Convert.ToBase64String(result.ResponseBodyBytes));
 		engine.AddOrUpdateScriptOutput("response_headers", JsonConvert.SerializeObject(result.ResponseHeaders.AsDictionary()));
 	}
 	catch (ScriptAbortException)

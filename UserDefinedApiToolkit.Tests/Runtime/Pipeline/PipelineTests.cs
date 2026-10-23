@@ -42,34 +42,6 @@ namespace UserDefinedApiToolkit.Tests.Runtime.Pipeline
 		}
 
 		[TestMethod]
-		public void Run_WithConfigureServicesMiddleware_AppendsAfterFluentMiddleware()
-		{
-			// Arrange
-			var recorder = new PipelineRecorder();
-			var api = UserDefinedApi.CreateBuilder()
-				.AddController<Controller_Pipeline>()
-				.UseMiddleware<SecondMiddleware>()
-				.ConfigureServices(services =>
-				{
-					services.AddSingleton(recorder);
-					services.AddScoped<IApiMiddleware, FirstMiddleware>();
-				})
-				.Build();
-
-			// Act
-			var result = api.Run(new EngineMock(), CreateRequest("success"));
-
-			// Assert
-			result.ResponseCode.Should().Be(200);
-			recorder.Events.Should().Equal(
-				"second-before",
-				"first-before",
-				"action",
-				"first-after",
-				"second-after");
-		}
-
-		[TestMethod]
 		public void Run_WithShortCircuitingMiddleware_DoesNotInvokeEndpoint()
 		{
 			// Arrange
@@ -86,6 +58,43 @@ namespace UserDefinedApiToolkit.Tests.Runtime.Pipeline
 			// Assert
 			result.ResponseCode.Should().Be(204);
 			recorder.Events.Should().Equal("short-circuit");
+		}
+
+		[TestMethod]
+		public void Run_WithShortCircuitingMiddleware_DoesNotActivateLaterMiddleware()
+		{
+			// Arrange
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseMiddleware<ShortCircuitMiddleware>()
+				.UseMiddleware<ConstructorThrowingMiddleware>()
+				.ConfigureServices(services => services.AddSingleton(new PipelineRecorder()))
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("success"));
+
+			// Assert
+			result.ResponseCode.Should().Be(204);
+		}
+
+		[TestMethod]
+		public void Build_SnapshotsMiddlewareRegistrations()
+		{
+			// Arrange
+			var recorder = new PipelineRecorder();
+			var builder = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.ConfigureServices(services => services.AddSingleton(recorder));
+			var api = builder.Build();
+			builder.UseMiddleware<RequestLoggingMiddleware>();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("success"));
+
+			// Assert
+			result.ResponseCode.Should().Be(200);
+			recorder.Events.Should().Equal("action");
 		}
 
 		[TestMethod]
@@ -138,6 +147,236 @@ namespace UserDefinedApiToolkit.Tests.Runtime.Pipeline
 			result.ResponseCode.Should().Be(418);
 			exceptionRecorder.Exception.Should().BeOfType<InvalidOperationException>();
 			exceptionRecorder.Exception!.Message.Should().Be("middleware failure");
+		}
+
+		[TestMethod]
+		public void Build_SnapshotsExceptionHandlerRegistrations()
+		{
+			// Arrange
+			var exceptionRecorder = new ExceptionRecorder();
+			var handlerRecorder = new ExceptionHandlerRecorder();
+			var builder = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<NonMatchingExceptionHandler>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton(exceptionRecorder);
+					services.AddSingleton(handlerRecorder);
+					services.AddSingleton(new PipelineRecorder());
+					services.AddScoped<RecordingExceptionHandler>();
+				});
+			var api = builder.Build();
+			builder.UseExceptionHandler<RecordingExceptionHandler>();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			exceptionRecorder.Exception.Should().BeNull();
+			handlerRecorder.Events.Should().Equal("non-matching");
+		}
+
+		[TestMethod]
+		public void Run_WithExceptionHandler_CatchesMiddlewareActivationExceptions()
+		{
+			// Arrange
+			var exceptionRecorder = new ExceptionRecorder();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<RecordingExceptionHandler>()
+				.UseMiddleware<ConstructorThrowingMiddleware>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton(exceptionRecorder);
+					services.AddSingleton(new PipelineRecorder());
+				})
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("success"));
+
+			// Assert
+			result.ResponseCode.Should().Be(418);
+			exceptionRecorder.Exception.Should().NotBeNull();
+		}
+
+		[TestMethod]
+		public void Run_WithMultipleExceptionHandlers_UsesFirstHandlerThatHandlesException()
+		{
+			// Arrange
+			var exceptionRecorder = new ExceptionRecorder();
+			var handlerRecorder = new ExceptionHandlerRecorder();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<NonMatchingExceptionHandler>()
+				.UseExceptionHandler<RecordingExceptionHandler>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton(exceptionRecorder);
+					services.AddSingleton(handlerRecorder);
+					services.AddSingleton(new PipelineRecorder());
+				})
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(418);
+			handlerRecorder.Events.Should().Equal("non-matching");
+			exceptionRecorder.Exception.Should().BeOfType<InvalidOperationException>();
+		}
+
+		[TestMethod]
+		public void Run_WithMultipleExceptionHandlers_DoesNotActivateHandlersAfterHandledException()
+		{
+			// Arrange
+			var exceptionRecorder = new ExceptionRecorder();
+			var handlerRecorder = new ExceptionHandlerRecorder();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<NonMatchingExceptionHandler>()
+				.UseExceptionHandler<RecordingExceptionHandler>()
+				.UseExceptionHandler<ConstructorThrowingExceptionHandler>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton(exceptionRecorder);
+					services.AddSingleton(handlerRecorder);
+					services.AddSingleton(new PipelineRecorder());
+				})
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(418);
+		}
+
+		[TestMethod]
+		public void Run_WithExceptionHandlers_WhenNoneHandlesException_ReturnsInternalServerError()
+		{
+			// Arrange
+			var handlerRecorder = new ExceptionHandlerRecorder();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<NonMatchingExceptionHandler>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton(handlerRecorder);
+					services.AddSingleton(new PipelineRecorder());
+				})
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			result.ResponseBody.Should().BeNull();
+			handlerRecorder.Events.Should().Equal("non-matching");
+		}
+
+		[TestMethod]
+		public void Run_WithExceptionHandler_WhenHandlerReturnsNullResult_ReturnsInternalServerError()
+		{
+			// Arrange
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<NullResultExceptionHandler>()
+				.ConfigureServices(services => services.AddSingleton(new PipelineRecorder()))
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			result.ResponseBody.Should().BeNull();
+		}
+
+		[TestMethod]
+		public void Run_WithExceptionHandler_ClearsResponseWrittenBeforeMiddlewareFailure()
+		{
+			// Arrange
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<StatusOnlyExceptionHandler>()
+				.UseMiddleware<WritesResponseAndThrowsMiddleware>()
+				.ConfigureServices(services => services.AddSingleton(new PipelineRecorder()))
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("success"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			result.ResponseBody.Should().BeNull();
+			result.ResponseBodyBytes.Should().BeNull();
+		}
+
+		[TestMethod]
+		public void Run_WithExceptionHandler_PreservesHeadersSetByOuterMiddleware()
+		{
+			// Arrange
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseMiddleware<SetsHeaderMiddleware>()
+				.UseExceptionHandler<StatusOnlyExceptionHandler>()
+				.ConfigureServices(services => services.AddSingleton(new PipelineRecorder()))
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			result.ResponseHeaders.AsDictionary().Should().ContainKey("X-Outer");
+			result.ResponseHeaders.AsDictionary()["X-Outer"].Should().Equal("outer");
+		}
+
+		[TestMethod]
+		public void Run_WithExceptionHandler_DiscardsHeadersSetByEndpointBeforeFailure()
+		{
+			// Arrange
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<StatusOnlyExceptionHandler>()
+				.ConfigureServices(services => services.AddSingleton(new PipelineRecorder()))
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("header-throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			result.ResponseHeaders.AsDictionary().Should().NotContainKey("X-Endpoint");
+		}
+
+		[TestMethod]
+		public void Run_WhenExceptionHandlerFails_ResetsExistingResponseForFallback()
+		{
+			// Arrange
+			var exceptionRecorder = new PartialResponseExceptionRecorder();
+			var api = UserDefinedApi.CreateBuilder()
+				.AddController<Controller_Pipeline>()
+				.UseExceptionHandler<PartialResponseExceptionHandler>()
+				.ConfigureServices(services =>
+				{
+					services.AddSingleton(exceptionRecorder);
+					services.AddSingleton(new PipelineRecorder());
+				})
+				.Build();
+
+			// Act
+			var result = api.Run(new EngineMock(), CreateRequest("throw"));
+
+			// Assert
+			result.ResponseCode.Should().Be(500);
+			result.ResponseBody.Should().BeNull();
+			result.ResponseBodyBytes.Should().BeNull();
+			result.Should().BeSameAs(exceptionRecorder.PartialResponse);
 		}
 
 		[TestMethod]

@@ -127,7 +127,7 @@ Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult.ExecuteResult(Skyline.D
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiMiddleware
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiMiddleware.Invoke(Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiRequestDelegate! next) -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiExceptionHandler
-Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiExceptionHandler.Handle(System.Exception! exception, Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context) -> Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult!
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiExceptionHandler.TryHandle(System.Exception! exception, Skyline.DataMiner.Utils.UserDefinedApiToolkit.ApiContext! context, out Skyline.DataMiner.Utils.UserDefinedApiToolkit.IApiResult? result) -> bool
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter.CanConvertInput(System.Type! type) -> bool
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.IInputConverter.ConvertInput(string! input, System.Type! type) -> object?

@@ -26,9 +26,11 @@
 
 		private readonly List<IInputConverter> _inputConverters = new();
 		private readonly List<IOutputConverter> _outputConverters = new();
+		private readonly List<Func<IServiceProvider, IApiMiddleware>> _middlewareFactories = new();
+		private readonly List<Func<IServiceProvider, IApiExceptionHandler>> _exceptionHandlerFactories = new();
 
 		private readonly IServiceCollection _services;
-		private bool _exceptionHandlerConfigured;
+		private int? _exceptionMiddlewareIndex;
 
 		internal UserDefinedApiBuilder()
 		{
@@ -121,31 +123,29 @@
 		public UserDefinedApiBuilder UseMiddleware<TMiddleware>()
 			where TMiddleware : class, IApiMiddleware
 		{
-			_services.AddScoped<IApiMiddleware, TMiddleware>();
+			_services.AddScoped<TMiddleware>();
+			_middlewareFactories.Add(services => services.GetRequiredService<TMiddleware>());
 			return this;
 		}
 
 		/// <summary>
-		/// Adds exception handling middleware to the API request pipeline at the current registration
-		/// position. Exceptions from middleware and endpoint execution registered after this call
-		/// are handled.
+		/// Adds an exception handler to the API request pipeline. The first call adds exception
+		/// handling middleware at the current registration position; subsequent calls add handlers
+		/// to that middleware in registration order.
 		/// </summary>
 		/// <typeparam name="TExceptionHandler">The exception handler type to use.</typeparam>
 		/// <returns>The same builder instance, for chaining.</returns>
-		/// <exception cref="InvalidOperationException">
-		/// Thrown when exception handling has already been configured.
-		/// </exception>
 		public UserDefinedApiBuilder UseExceptionHandler<TExceptionHandler>()
 			where TExceptionHandler : class, IApiExceptionHandler
 		{
-			if (_exceptionHandlerConfigured)
+			_services.AddScoped<TExceptionHandler>();
+			_exceptionHandlerFactories.Add(services => services.GetRequiredService<TExceptionHandler>());
+
+			if (!_exceptionMiddlewareIndex.HasValue)
 			{
-				throw new InvalidOperationException("Only one API exception handler can be configured.");
+				_exceptionMiddlewareIndex = _middlewareFactories.Count;
 			}
 
-			_exceptionHandlerConfigured = true;
-			_services.AddScoped<IApiExceptionHandler, TExceptionHandler>();
-			_services.AddScoped<IApiMiddleware, ExceptionHandlingMiddleware>();
 			return this;
 		}
 
@@ -303,10 +303,23 @@
 					ValidateOnBuild = true,
 				});
 
+			var middlewareFactories = _middlewareFactories.ToList();
+			var exceptionHandlerFactories = _exceptionHandlerFactories.ToList();
+			if (_exceptionMiddlewareIndex.HasValue)
+			{
+				middlewareFactories.Insert(
+					_exceptionMiddlewareIndex.Value,
+					services => new ExceptionHandlingMiddleware(
+						services,
+						exceptionHandlerFactories,
+						services.GetRequiredService<ILogger<ExceptionHandlingMiddleware>>()));
+			}
+
 			return new UserDefinedApi(
 				_handlers,
 				_inputConverters,
 				_outputConverters,
+				middlewareFactories,
 				serviceProvider);
 		}
 

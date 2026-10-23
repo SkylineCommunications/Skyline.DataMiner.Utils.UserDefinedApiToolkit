@@ -1,6 +1,7 @@
 namespace UserDefinedApiToolkit.Tests.Runtime.Pipeline.TestFiles
 {
 	using System;
+	using System.Collections.Generic;
 
 	using Skyline.DataMiner.Utils.UserDefinedApiToolkit;
 
@@ -26,6 +27,13 @@ namespace UserDefinedApiToolkit.Tests.Runtime.Pipeline.TestFiles
 		public IApiResult Throw()
 		{
 			throw new InvalidOperationException("controller failure");
+		}
+
+		[HttpGet("header-throw")]
+		public IApiResult HeaderThrow()
+		{
+			Response.ResponseHeaders.Set("X-Endpoint", new List<string> { "endpoint" });
+			throw new InvalidOperationException("controller failure after setting a header");
 		}
 	}
 }

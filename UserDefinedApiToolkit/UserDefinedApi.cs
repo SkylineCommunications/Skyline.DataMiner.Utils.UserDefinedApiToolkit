@@ -16,16 +16,19 @@
 		private readonly RouteSelector _routeSelector;
 		private readonly List<IInputConverter> _inputConverters;
 		private readonly List<IOutputConverter> _outputConverters;
+		private readonly List<Func<IServiceProvider, IApiMiddleware>> _middlewareFactories;
 
 		internal UserDefinedApi(
 			List<RouteHandlerInfo> handlers,
 			List<IInputConverter> inputConverters,
 			List<IOutputConverter> outputConverters,
+			List<Func<IServiceProvider, IApiMiddleware>> middlewareFactories,
 			IServiceProvider rootProvider)
 		{
 			_rootProvider = rootProvider;
 			_inputConverters = inputConverters;
 			_outputConverters = outputConverters;
+			_middlewareFactories = middlewareFactories;
 			_routeSelector = new RouteSelector(handlers);
 		}
 
@@ -65,9 +68,7 @@
 
 		private ApiPipeline BuildPipeline(IServiceProvider services)
 		{
-			var middleware = new List<IApiMiddleware>(services.GetServices<IApiMiddleware>());
-
-			return new ApiPipeline(middleware, context => ExecuteEndpoint(context, services));
+			return new ApiPipeline(_middlewareFactories, services, context => ExecuteEndpoint(context, services));
 		}
 
 		private void ExecuteEndpoint(ApiContext context, IServiceProvider services)
