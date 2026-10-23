@@ -26,8 +26,11 @@
 
 		private readonly List<IInputConverter> _inputConverters = new();
 		private readonly List<IOutputConverter> _outputConverters = new();
+		private readonly List<Func<IServiceProvider, IApiMiddleware>> _middlewareFactories = new();
+		private readonly List<Func<IServiceProvider, IApiExceptionHandler>> _exceptionHandlerFactories = new();
 
 		private readonly IServiceCollection _services;
+		private int? _exceptionMiddlewareIndex;
 
 		internal UserDefinedApiBuilder()
 		{
@@ -107,6 +110,40 @@
 					parameters);
 
 				_handlers.Add(routeInfo);
+			}
+
+			return this;
+		}
+
+		/// <summary>
+		/// Adds a middleware type to the API request pipeline.
+		/// </summary>
+		/// <typeparam name="TMiddleware">The middleware type to add.</typeparam>
+		/// <returns>The same builder instance, for chaining.</returns>
+		public UserDefinedApiBuilder UseMiddleware<TMiddleware>()
+			where TMiddleware : class, IApiMiddleware
+		{
+			_services.AddScoped<TMiddleware>();
+			_middlewareFactories.Add(services => services.GetRequiredService<TMiddleware>());
+			return this;
+		}
+
+		/// <summary>
+		/// Adds an exception handler to the API request pipeline. The first call adds exception
+		/// handling middleware at the current registration position; subsequent calls add handlers
+		/// to that middleware in registration order.
+		/// </summary>
+		/// <typeparam name="TExceptionHandler">The exception handler type to use.</typeparam>
+		/// <returns>The same builder instance, for chaining.</returns>
+		public UserDefinedApiBuilder UseExceptionHandler<TExceptionHandler>()
+			where TExceptionHandler : class, IApiExceptionHandler
+		{
+			_services.AddScoped<TExceptionHandler>();
+			_exceptionHandlerFactories.Add(services => services.GetRequiredService<TExceptionHandler>());
+
+			if (!_exceptionMiddlewareIndex.HasValue)
+			{
+				_exceptionMiddlewareIndex = _middlewareFactories.Count;
 			}
 
 			return this;
@@ -259,20 +296,31 @@
 			_services.AddScoped(typeof(ILogger<>), typeof(EngineLogger<>));
 			_services.AddScoped<ILogger, EngineLogger>();
 
-			// Build the api
-			var api = new UserDefinedApi(
+			var serviceProvider = _services.BuildServiceProvider(
+				new ServiceProviderOptions
+				{
+					ValidateScopes = true,
+					ValidateOnBuild = true,
+				});
+
+			var middlewareFactories = _middlewareFactories.ToList();
+			var exceptionHandlerFactories = _exceptionHandlerFactories.ToList();
+			if (_exceptionMiddlewareIndex.HasValue)
+			{
+				middlewareFactories.Insert(
+					_exceptionMiddlewareIndex.Value,
+					services => new ExceptionHandlingMiddleware(
+						services,
+						exceptionHandlerFactories,
+						services.GetRequiredService<ILogger<ExceptionHandlingMiddleware>>()));
+			}
+
+			return new UserDefinedApi(
 				_handlers,
 				_inputConverters,
 				_outputConverters,
-				_services.BuildServiceProvider(
-					new ServiceProviderOptions
-					{
-						ValidateScopes = true,
-						ValidateOnBuild = true,
-					}));
-
-			var serviceProvider = _services.BuildServiceProvider();
-			return new UserDefinedApi(_handlers, _inputConverters, _outputConverters, serviceProvider);
+				middlewareFactories,
+				serviceProvider);
 		}
 
 		private static void ValidateRouteParameters(RouteHandlerInfo handler)

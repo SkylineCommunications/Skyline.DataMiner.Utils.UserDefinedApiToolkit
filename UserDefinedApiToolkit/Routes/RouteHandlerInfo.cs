@@ -3,6 +3,7 @@
 	using System;
 	using System.Linq;
 	using System.Reflection;
+	using System.Runtime.ExceptionServices;
 
 	using Microsoft.Extensions.DependencyInjection;
 
@@ -56,8 +57,16 @@
 					: services.GetRequiredService(param.ParameterType);
 			}
 
-			var result = (ControllerBase)ConstructorInfo.Invoke(parameters);
-			return result;
+			try
+			{
+				var result = (ControllerBase)ConstructorInfo.Invoke(parameters);
+				return result;
+			}
+			catch (TargetInvocationException exception) when (exception.InnerException is not null)
+			{
+				ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
+				throw;
+			}
 		}
 
 		public IApiResult Invoke(ApiContext context, ControllerBase controller, IServiceProvider services)
@@ -88,8 +97,16 @@
 				};
 			}
 
-			var result = (IApiResult)MethodInfo.Invoke(controller, parameters);
-			return result;
+			try
+			{
+				var result = (IApiResult)MethodInfo.Invoke(controller, parameters);
+				return result;
+			}
+			catch (TargetInvocationException exception) when (exception.InnerException is not null)
+			{
+				ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
+				throw;
+			}
 		}
 
 		public int GetRank(ApiContext context, IServiceProvider services)
