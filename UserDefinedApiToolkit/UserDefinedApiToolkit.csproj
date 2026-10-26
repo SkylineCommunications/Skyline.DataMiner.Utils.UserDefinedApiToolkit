@@ -71,6 +71,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
 		<PackageReference Include="Newtonsoft.Json" />
 		<PackageReference Include="Skyline.DataMiner.Dev.Automation" />
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" />
 	</ItemGroup>
 
 	<Target Name="CopyNuGetPackage" AfterTargets="Pack" Condition="'$(NuGetStorePath)' != '' and '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

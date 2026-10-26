@@ -16,16 +16,19 @@
 		private readonly RouteSelector _routeSelector;
 		private readonly List<IInputConverter> _inputConverters;
 		private readonly List<IOutputConverter> _outputConverters;
+		private readonly List<Func<IServiceProvider, IApiMiddleware>> _middlewareFactories;
 
 		internal UserDefinedApi(
 			List<RouteHandlerInfo> handlers,
 			List<IInputConverter> inputConverters,
 			List<IOutputConverter> outputConverters,
+			List<Func<IServiceProvider, IApiMiddleware>> middlewareFactories,
 			IServiceProvider rootProvider)
 		{
 			_rootProvider = rootProvider;
 			_inputConverters = inputConverters;
 			_outputConverters = outputConverters;
+			_middlewareFactories = middlewareFactories;
 			_routeSelector = new RouteSelector(handlers);
 		}
 
@@ -58,19 +61,29 @@
 					OutputConverters = _outputConverters,
 				};
 
-				var route = _routeSelector.SelectRoute(apiContext, scope.ServiceProvider);
-				var controller = route.CreateController(scope.ServiceProvider);
-				controller.ApiContext = apiContext;
-
-				var result = route.Invoke(apiContext, controller, scope.ServiceProvider);
-				if (result is null)
-				{
-					throw new InvalidOperationException("The API action returned a null result.");
-				}
-
-				result.ExecuteResult(apiContext);
+				BuildPipeline(scope.ServiceProvider).Invoke(apiContext);
 				return apiContext.Response;
 			}
+		}
+
+		private ApiPipeline BuildPipeline(IServiceProvider services)
+		{
+			return new ApiPipeline(_middlewareFactories, services, context => ExecuteEndpoint(context, services));
+		}
+
+		private void ExecuteEndpoint(ApiContext context, IServiceProvider services)
+		{
+			var route = _routeSelector.SelectRoute(context, services);
+			var controller = route.CreateController(services);
+			controller.ApiContext = context;
+
+			var result = route.Invoke(context, controller, services);
+			if (result is null)
+			{
+				throw new InvalidOperationException("The API action returned a null result.");
+			}
+
+			result.ExecuteResult(context);
 		}
 	}
 }

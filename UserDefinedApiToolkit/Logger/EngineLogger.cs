@@ -35,6 +35,11 @@
 			}
 
 			var message = formatter(state, exception);
+			if (exception is not null)
+			{
+				message += Environment.NewLine + exception;
+			}
+
 			var fullMessage = $"[{logLevel}] {_categoryName}: {message}";
 
 			switch (logLevel)
@@ -97,6 +102,11 @@
 			}
 
 			var message = formatter(state, exception);
+			if (exception is not null)
+			{
+				message += Environment.NewLine + exception;
+			}
+
 			var fullMessage = $"[{logLevel}] {_categoryName}: {message}";
 
 			switch (logLevel)
