@@ -156,7 +156,7 @@
 
 		private static string BuildMemberId(Type classType)
 		{
-			var typeName = classType!.FullName;
+			var typeName = GetDocumentationTypeName(classType);
 			var memberId = $"T:{typeName}";
 
 			return memberId;
@@ -164,14 +164,58 @@
 
 		private static string BuildMemberId(MethodInfo method)
 		{
-			var typeName = method.DeclaringType!.FullName;
+			var typeName = GetDocumentationTypeName(method.DeclaringType!);
 			var paramTypes = method.GetParameters()
-				.Select(p => p.ParameterType.FullName ?? p.ParameterType.Name);
+				.Select(p => GetDocumentationTypeName(p.ParameterType));
 
 			var paramStr = String.Join(",", paramTypes);
 			return String.IsNullOrEmpty(paramStr)
 				? $"M:{typeName}.{method.Name}"
 				: $"M:{typeName}.{method.Name}({paramStr})";
+		}
+
+		private static string GetDocumentationTypeName(Type type)
+		{
+			if (type.IsByRef)
+			{
+				return $"{GetDocumentationTypeName(type.GetElementType()!)}@";
+			}
+
+			if (type.IsPointer)
+			{
+				return $"{GetDocumentationTypeName(type.GetElementType()!)}*";
+			}
+
+			if (type.IsArray)
+			{
+				var rankSuffix = type.GetArrayRank() == 1
+					? "[]"
+					: $"[{new string(',', type.GetArrayRank() - 1)}]";
+				return $"{GetDocumentationTypeName(type.GetElementType()!)}{rankSuffix}";
+			}
+
+			if (type.IsGenericParameter)
+			{
+				return type.DeclaringMethod is null
+					? $"`{type.GenericParameterPosition}"
+					: $"``{type.GenericParameterPosition}";
+			}
+
+			if (type.IsGenericType)
+			{
+				var genericTypeName = type.GetGenericTypeDefinition().FullName ?? type.Name;
+				var genericArityIndex = genericTypeName.IndexOf('`');
+				if (genericArityIndex >= 0)
+				{
+					genericTypeName = genericTypeName.Substring(0, genericArityIndex);
+				}
+
+				var arguments = type.GetGenericArguments()
+					.Select(GetDocumentationTypeName);
+				return $"{genericTypeName}{{{String.Join(",", arguments)}}}";
+			}
+
+			return type.FullName ?? type.Name;
 		}
 	}
 }

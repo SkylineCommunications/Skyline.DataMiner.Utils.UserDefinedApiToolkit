@@ -58,6 +58,24 @@
 		}
 
 		[TestMethod]
+		public void GetMethodDocs_WithNullableParameter_ReturnsSummary()
+		{
+			var method = typeof(TestFiles.DocumentationParameterFixture).GetMethod(
+				nameof(TestFiles.DocumentationParameterFixture.GetOptionalValue));
+			var xmlDocs = XDocument.Parse($@"<doc><members><member name=""M:{typeof(TestFiles.DocumentationParameterFixture).FullName}.GetOptionalValue(System.Nullable{{System.Int32}})"">
+				<summary>
+				Gets an optional value.
+				</summary>
+			</member></members></doc>");
+			var unit = new ControllerUnit(typeof(TestFiles.DocumentationParameterFixture), xmlDocs);
+
+			var docs = unit.GetMethodDocs(method!);
+
+			docs.Should().NotBeNull();
+			docs!.Summary.Should().Be("Gets an optional value.");
+		}
+
+		[TestMethod]
 		public void GetTagName_ControllerType_ReturnsControllerNameWithoutSuffix()
 		{
 			var unit = new ControllerUnit(typeof(TestFiles.SampleController), null);
