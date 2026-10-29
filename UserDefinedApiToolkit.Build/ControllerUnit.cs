@@ -156,7 +156,7 @@
 
 		private static string BuildMemberId(Type classType)
 		{
-			var typeName = GetDocumentationTypeName(classType);
+			var typeName = GetDocumentationDeclarationTypeName(classType);
 			var memberId = $"T:{typeName}";
 
 			return memberId;
@@ -164,34 +164,46 @@
 
 		private static string BuildMemberId(MethodInfo method)
 		{
-			var typeName = GetDocumentationTypeName(method.DeclaringType!);
+			var typeName = GetDocumentationDeclarationTypeName(method.DeclaringType!);
 			var paramTypes = method.GetParameters()
-				.Select(p => GetDocumentationTypeName(p.ParameterType));
+				.Select(p => GetDocumentationParameterTypeName(p.ParameterType));
+			var methodName = method.IsGenericMethod
+				? $"{method.Name}``{method.GetGenericArguments().Length}"
+				: method.Name;
 
 			var paramStr = String.Join(",", paramTypes);
 			return String.IsNullOrEmpty(paramStr)
-				? $"M:{typeName}.{method.Name}"
-				: $"M:{typeName}.{method.Name}({paramStr})";
+				? $"M:{typeName}.{methodName}"
+				: $"M:{typeName}.{methodName}({paramStr})";
 		}
 
-		private static string GetDocumentationTypeName(Type type)
+		private static string GetDocumentationDeclarationTypeName(Type type)
+		{
+			var typeName = type.IsGenericType
+				? type.GetGenericTypeDefinition().FullName
+				: type.FullName;
+
+			return (typeName ?? type.Name).Replace('+', '.');
+		}
+
+		private static string GetDocumentationParameterTypeName(Type type)
 		{
 			if (type.IsByRef)
 			{
-				return $"{GetDocumentationTypeName(type.GetElementType()!)}@";
+				return $"{GetDocumentationParameterTypeName(type.GetElementType()!)}@";
 			}
 
 			if (type.IsPointer)
 			{
-				return $"{GetDocumentationTypeName(type.GetElementType()!)}*";
+				return $"{GetDocumentationParameterTypeName(type.GetElementType()!)}*";
 			}
 
 			if (type.IsArray)
 			{
 				var rankSuffix = type.GetArrayRank() == 1
 					? "[]"
-					: $"[{new string(',', type.GetArrayRank() - 1)}]";
-				return $"{GetDocumentationTypeName(type.GetElementType()!)}{rankSuffix}";
+					: $"[{String.Join(",", Enumerable.Repeat("0:", type.GetArrayRank()))}]";
+				return $"{GetDocumentationParameterTypeName(type.GetElementType()!)}{rankSuffix}";
 			}
 
 			if (type.IsGenericParameter)
@@ -203,19 +215,43 @@
 
 			if (type.IsGenericType)
 			{
-				var genericTypeName = type.GetGenericTypeDefinition().FullName ?? type.Name;
-				var genericArityIndex = genericTypeName.IndexOf('`');
-				if (genericArityIndex >= 0)
-				{
-					genericTypeName = genericTypeName.Substring(0, genericArityIndex);
-				}
-
-				var arguments = type.GetGenericArguments()
-					.Select(GetDocumentationTypeName);
-				return $"{genericTypeName}{{{String.Join(",", arguments)}}}";
+				return GetDocumentationConstructedTypeName(type);
 			}
 
-			return type.FullName ?? type.Name;
+			return GetDocumentationDeclarationTypeName(type);
+		}
+
+		private static string GetDocumentationConstructedTypeName(Type type)
+		{
+			var genericTypeName = type.GetGenericTypeDefinition().FullName ?? type.Name;
+			var genericArguments = type.GetGenericArguments();
+			var argumentIndex = 0;
+			var segments = genericTypeName.Split('+')
+				.Select(segment =>
+				{
+					var arityIndex = segment.IndexOf('`');
+					if (arityIndex < 0)
+					{
+						return segment;
+					}
+
+					var arity = 0;
+					for (var i = arityIndex + 1; i < segment.Length; i++)
+					{
+						arity = (arity * 10) + (segment[i] - '0');
+					}
+
+					var segmentName = segment.Substring(0, arityIndex);
+					var segmentArguments = genericArguments
+						.Skip(argumentIndex)
+						.Take(arity)
+						.Select(GetDocumentationParameterTypeName);
+					argumentIndex += arity;
+
+					return $"{segmentName}{{{String.Join(",", segmentArguments)}}}";
+				});
+
+			return String.Join(".", segments);
 		}
 	}
 }
