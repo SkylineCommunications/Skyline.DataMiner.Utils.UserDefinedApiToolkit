@@ -65,17 +65,62 @@ namespace UserDefinedApiToolkit.Tests.Build
 		}
 
 		[TestMethod]
-		public void InstallerTargets_BuildsUdapiProjectsAndCopiesGeneratedFiles()
+		public void InstallerTargets_PackagesGeneratedFilesBeforeCleanupAndPreservesUnrelatedFiles()
 		{
-			var packageDirectory = Path.Combine(_outputPath, "Package");
+			var project = CreateInstallerTargetTestProject(generateDataMinerPackage: true);
+			Directory.CreateDirectory(Path.GetDirectoryName(project.UnrelatedFile)!);
+			File.WriteAllText(project.UnrelatedFile, "preserve");
+
+			var output = RunMsBuild(project.CentralProjectPath, out var exitCode);
+
+			exitCode.Should().Be(0, output);
+			File.Exists(project.GeneratedFile).Should().BeFalse("the generated file should be removed after successful packaging");
+			File.ReadAllText(project.PackagedMetadataFile).Should().Contain("\"ToolkitVersion\":\"9.8.7\"");
+			File.ReadAllText(project.PackagedMetadataFile).Should().Contain("\"ScriptName\":\"Central Test Script\"");
+			File.ReadAllText(project.UnrelatedFile).Should().Be("preserve");
+		}
+
+		[TestMethod]
+		public void InstallerTargets_PackagingFailureRetainsGeneratedFiles()
+		{
+			var project = CreateInstallerTargetTestProject(generateDataMinerPackage: true, failPackageCreation: true);
+
+			var output = RunMsBuild(project.CentralProjectPath, out var exitCode);
+
+			exitCode.Should().NotBe(0, output);
+			File.Exists(project.GeneratedFile).Should().BeTrue();
+			File.Exists(project.PackagedMetadataFile).Should().BeFalse();
+		}
+
+		[TestMethod]
+		public void InstallerTargets_DisabledPackagingRetainsGeneratedFiles()
+		{
+			var project = CreateInstallerTargetTestProject(generateDataMinerPackage: false);
+
+			var output = RunMsBuild(project.CentralProjectPath, out var exitCode);
+
+			exitCode.Should().Be(0, output);
+			File.Exists(project.GeneratedFile).Should().BeTrue();
+			File.Exists(project.PackagedMetadataFile).Should().BeFalse();
+		}
+
+		private InstallerTargetTestProject CreateInstallerTargetTestProject(
+			bool generateDataMinerPackage,
+			bool failPackageCreation = false)
+		{
+			var packageDirectory = Path.Combine(_outputPath, Guid.NewGuid().ToString("N"));
 			var packageBuildDirectory = Path.Combine(packageDirectory, "build");
 			var taskDirectory = Path.Combine(packageDirectory, "tasks", "netstandard2.0");
-			var childDirectory = Path.Combine(_outputPath, "ChildApi");
+			var setupContentDirectory = Path.Combine(packageDirectory, "SetupContent", "UDAPI");
+			var childDirectory = Path.Combine(_outputPath, Guid.NewGuid().ToString("N"));
 			var childProjectPath = Path.Combine(childDirectory, "ChildApi.proj");
 			var childScriptPath = Path.ChangeExtension(childProjectPath, ".xml");
 			var centralProjectPath = Path.Combine(packageDirectory, "CentralPackage.proj");
 			var toolkitTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.targets");
 			var installerTargetSource = Path.Combine(GetTestAssemblyDirectory(), "Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer.targets");
+			var generatedFile = Path.Combine(setupContentDirectory, "ChildApi.udapi.json");
+			var unrelatedFile = Path.Combine(setupContentDirectory, "manual.json");
+			var packagedMetadataFile = Path.Combine(packageDirectory, "packaged-metadata.txt");
 
 			Directory.CreateDirectory(packageBuildDirectory);
 			Directory.CreateDirectory(taskDirectory);
@@ -115,40 +160,28 @@ namespace UserDefinedApiToolkit.Tests.Build
 			File.WriteAllText(centralProjectPath, $@"<Project ToolsVersion=""Current"">
 	<PropertyGroup>
 		<DataMinerType>Package</DataMinerType>
+		<GenerateDataMinerPackage>{generateDataMinerPackage.ToString().ToLowerInvariant()}</GenerateDataMinerPackage>
+		<FailPackageCreation>{failPackageCreation.ToString().ToLowerInvariant()}</FailPackageCreation>
 		<OutDir>{Escape(Path.Combine(packageDirectory, "bin") + Path.DirectorySeparatorChar)}</OutDir>
 	</PropertyGroup>
 	<ItemGroup>
-		<UdapiProject Include=""..\ChildApi\*.proj"" />
+		<UdapiProject Include=""..\{Path.GetFileName(childDirectory)}\*.proj"" />
 	</ItemGroup>
 	<Target Name=""Build"">
 		<Error
-			Condition=""!Exists('{Escape(Path.Combine(packageDirectory, "SetupContent", "UDAPI", "ChildApi.udapi.json"))}')""
+			Condition=""!Exists('{Escape(generatedFile)}')""
 			Text=""UDAPI installer metadata was not copied before the package build."" />
+	</Target>
+	<Target Name=""DmappCreation"" AfterTargets=""Build"" Condition=""'$(GenerateDataMinerPackage)' == 'true'"">
+		<Error
+			Condition=""'$(FailPackageCreation)' == 'true'""
+			Text=""Simulated DMAPP creation failure."" />
+		<Copy SourceFiles=""{Escape(generatedFile)}"" DestinationFiles=""{Escape(packagedMetadataFile)}"" />
 	</Target>
 	<Import Project=""{Escape(Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)))}"" />
 </Project>");
 
-			var process = Process.Start(new ProcessStartInfo
-			{
-				FileName = "dotnet",
-				Arguments = $"msbuild \"{centralProjectPath}\" /t:Build /nologo /v:minimal",
-				UseShellExecute = false,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				CreateNoWindow = true,
-			});
-			process.Should().NotBeNull();
-
-			var output = process!.StandardOutput.ReadToEnd() + Environment.NewLine + process.StandardError.ReadToEnd();
-			process.WaitForExit();
-
-			process.ExitCode.Should().Be(0, output);
-
-			var generatedFile = Path.Combine(packageDirectory, "SetupContent", "UDAPI", "ChildApi.udapi.json");
-			File.Exists(generatedFile).Should().BeTrue();
-			var generatedContent = File.ReadAllText(generatedFile);
-			generatedContent.Should().Contain("\"ToolkitVersion\":\"9.8.7\"");
-			generatedContent.Should().Contain("\"ScriptName\":\"Central Test Script\"");
+			return new InstallerTargetTestProject(centralProjectPath, generatedFile, unrelatedFile, packagedMetadataFile);
 		}
 
 		[TestMethod]
@@ -315,6 +348,29 @@ namespace UserDefinedApiToolkit.Tests.Build
 		private static string Escape(string value)
 		{
 			return System.Security.SecurityElement.Escape(value);
+		}
+
+		private sealed class InstallerTargetTestProject
+		{
+			public InstallerTargetTestProject(
+				string centralProjectPath,
+				string generatedFile,
+				string unrelatedFile,
+				string packagedMetadataFile)
+			{
+				CentralProjectPath = centralProjectPath;
+				GeneratedFile = generatedFile;
+				UnrelatedFile = unrelatedFile;
+				PackagedMetadataFile = packagedMetadataFile;
+			}
+
+			public string CentralProjectPath { get; }
+
+			public string GeneratedFile { get; }
+
+			public string UnrelatedFile { get; }
+
+			public string PackagedMetadataFile { get; }
 		}
 	}
 }
