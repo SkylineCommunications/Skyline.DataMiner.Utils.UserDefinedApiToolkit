@@ -49,9 +49,21 @@
 			<Output TaskParameter="TargetOutputs" ItemName="_UserDefinedApiToolkitInstallerFiles" />
 		</MSBuild>
 
+		<ItemGroup>
+			<_UserDefinedApiToolkitGeneratedInstallerFiles Include="@(_UserDefinedApiToolkitInstallerFiles->'$(_UserDefinedApiToolkitInstallerPackageOutputDirectory)\%(Filename)%(Extension)')" />
+		</ItemGroup>
+
 		<Copy
 			SourceFiles="@(_UserDefinedApiToolkitInstallerFiles)"
 			DestinationFolder="$(_UserDefinedApiToolkitInstallerPackageOutputDirectory)"
 			SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="SkylineUserDefinedApiToolkit_Installer_CleanupGeneratedUdapiFiles"
+			AfterTargets="DmappCreation"
+			Condition="'$(GenerateDataMinerPackage)' == 'true'
+				and '$(MSBuildLastTaskResult)' == 'true'
+				and '@(_UserDefinedApiToolkitGeneratedInstallerFiles)' != ''">
+		<Delete Files="@(_UserDefinedApiToolkitGeneratedInstallerFiles)" />
 	</Target>
 </Project>
