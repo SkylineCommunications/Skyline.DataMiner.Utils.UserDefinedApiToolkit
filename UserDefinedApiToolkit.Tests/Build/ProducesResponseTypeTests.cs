@@ -43,6 +43,7 @@
 			response.Content.Should().NotBeNull();
 			response.Content!.Should().ContainKey("application/json");
 			response.Content["application/json"].Schema.Should().BeOfType<OpenApiSchemaReference>();
+			response.Description.Should().Be("Successful response");
 			doc.Components!.Schemas.Should().ContainKey(nameof(TestFiles.SampleDto));
 		}
 
@@ -53,6 +54,7 @@
 
 			responses.Should().ContainKey("204");
 			responses["204"].Content.Should().BeNull();
+			responses["204"].Description.Should().BeEmpty();
 		}
 
 		[TestMethod]
@@ -63,6 +65,25 @@
 			responses.Should().HaveCount(2);
 			responses.Should().ContainKey("200");
 			responses.Should().ContainKey("404");
+			responses["404"].Description.Should().Be("Resource not found");
+		}
+
+		[TestMethod]
+		public void TypedResponseDescription_IsIncluded()
+		{
+			TryGetResponses(nameof(TestFiles.ResponseTypesController.GetWithTypedResponseDescription), out _, out var responses);
+
+			responses.Should().ContainKey("201");
+			responses["201"].Description.Should().Be("Created response");
+		}
+
+		[TestMethod]
+		public void DuplicateResponseDescriptions_LastDeclarationWins()
+		{
+			TryGetResponses(nameof(TestFiles.ResponseTypesController.GetWithDuplicateResponseDescriptions), out _, out var responses);
+
+			responses.Should().ContainKey("409");
+			responses["409"].Description.Should().Be("Last description");
 		}
 
 		[TestMethod]
@@ -73,6 +94,7 @@
 			responses.Should().ContainSingle();
 			responses.Should().ContainKey("200");
 			responses.Should().NotContainKey("400");
+			responses["200"].Description.Should().BeEmpty();
 		}
 
 		[TestMethod]

@@ -162,7 +162,10 @@ Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesAttribute.ContentTypes.get
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesAttribute.ProducesAttribute(string! contentType, params string![]! additionalContentTypes) -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(int statusCode) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(int statusCode, string? description) -> void
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(System.Type! responseType, int statusCode) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ProducesResponseTypeAttribute(System.Type! responseType, int statusCode, string? description) -> void
+Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.Description.get -> string?
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.ResponseType.get -> System.Type?
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.ProducesResponseTypeAttribute.StatusCode.get -> int
 Skyline.DataMiner.Utils.UserDefinedApiToolkit.RouteAttribute

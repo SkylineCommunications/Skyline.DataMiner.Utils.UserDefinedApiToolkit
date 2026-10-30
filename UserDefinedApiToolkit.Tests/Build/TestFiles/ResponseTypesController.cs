@@ -15,14 +15,14 @@
 	public class ResponseTypesController : ControllerBase
 	{
 		[HttpGet]
-		[ProducesResponseType(typeof(SampleDto), 200)]
+		[ProducesResponseType(typeof(SampleDto), 200, "Successful response")]
 		public IApiResult GetWithExplicitTypedResponse()
 		{
 			return Ok(new SampleDto());
 		}
 
 		[HttpGet]
-		[ProducesResponseType(204)]
+		[ProducesResponseType(204, " ")]
 		public IApiResult GetWithStatusOnlyResponse()
 		{
 			return NoContent();
@@ -30,10 +30,25 @@
 
 		[HttpGet]
 		[ProducesResponseType(typeof(SampleDto), 200)]
-		[ProducesResponseType(404)]
+		[ProducesResponseType(404, "Resource not found")]
 		public IApiResult GetWithMultipleResponses()
 		{
 			return Ok(new SampleDto());
+		}
+
+		[HttpGet]
+		[ProducesResponseType(typeof(SampleDto), 201, "Created response")]
+		public IApiResult GetWithTypedResponseDescription()
+		{
+			return Created(new SampleDto());
+		}
+
+		[HttpGet]
+		[ProducesResponseType(409, "First description")]
+		[ProducesResponseType(409, "Last description")]
+		public IApiResult GetWithDuplicateResponseDescriptions()
+		{
+			return Conflict();
 		}
 
 		[HttpGet]

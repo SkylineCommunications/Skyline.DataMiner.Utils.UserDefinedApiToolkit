@@ -44,6 +44,17 @@ When `OpenApiInfoDescription` is configured, the document contains the value in 
 `[Consumes]`, `[Produces]`, and `[ProducesResponseType]` describe request and response metadata in
 OpenAPI; they do not change runtime serialization or request handling.
 
+Use the optional description overloads of `[ProducesResponseType]` to document the meaning of an
+explicit response for a specific endpoint:
+
+```csharp
+[ProducesResponseType(404, "The requested user was not found")]
+[ProducesResponseType(typeof(ErrorDto), 400, "The request contains invalid data")]
+```
+
+Existing response declarations without a description remain supported and produce an empty
+description. If the same status code is declared more than once, the last declaration is used.
+
 ## Centralized installer packaging
 
 The installer package generates the JSON metadata files used to install User-Defined APIs. Add the

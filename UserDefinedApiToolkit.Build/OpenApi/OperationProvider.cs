@@ -69,17 +69,34 @@
 
 			foreach (var attr in producesAttrs)
 			{
-				if (attr.ConstructorArguments.Count == 2)
+				var arguments = attr.ConstructorArguments;
+
+				if (arguments.Count == 3)
+				{
+					// [ProducesResponseType(typeof(MyResponse), 200, "Successful response")]
+					var responseType = arguments[0].Value as Type;
+					var statusCode = (int)arguments[1].Value!;
+					var description = arguments[2].Value as string;
+					AddResponse(responses, statusCode, responseType, contentTypes, description);
+				}
+				else if (arguments.Count == 2 && arguments[0].Value is Type)
 				{
 					// [ProducesResponseType(typeof(MyResponse), 200)]
-					var responseType = attr.ConstructorArguments[0].Value as Type;
-					var statusCode = (int)attr.ConstructorArguments[1].Value!;
+					var responseType = arguments[0].Value as Type;
+					var statusCode = (int)arguments[1].Value!;
 					AddResponse(responses, statusCode, responseType, contentTypes);
+				}
+				else if (arguments.Count == 2)
+				{
+					// [ProducesResponseType(400, "Invalid request")]
+					var statusCode = (int)arguments[0].Value!;
+					var description = arguments[1].Value as string;
+					AddResponse(responses, statusCode, null, contentTypes, description);
 				}
 				else
 				{
 					// [ProducesResponseType(200)]
-					var statusCode = (int)attr.ConstructorArguments[0].Value!;
+					var statusCode = (int)arguments[0].Value!;
 					AddResponse(responses, statusCode, null, contentTypes);
 				}
 			}
@@ -98,9 +115,17 @@
 			return responses;
 		}
 
-		private void AddResponse(OpenApiResponses responses, int statusCode, Type? responseType, IReadOnlyList<string> contentTypes)
+		private void AddResponse(
+			OpenApiResponses responses,
+			int statusCode,
+			Type? responseType,
+			IReadOnlyList<string> contentTypes,
+			string? description = null)
 		{
-			var response = new OpenApiResponse { Description = String.Empty };
+			var response = new OpenApiResponse
+			{
+				Description = String.IsNullOrWhiteSpace(description) ? String.Empty : description,
+			};
 
 			if (responseType != null)
 			{
