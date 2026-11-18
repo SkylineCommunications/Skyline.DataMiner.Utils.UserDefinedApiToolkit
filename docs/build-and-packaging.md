@@ -73,9 +73,10 @@ included:
 </ItemGroup>
 ```
 
-The installer package builds each listed project before the package project, generates a metadata
-file named after each project (for example, `OrdersApi.udapi.json`), and copies the files to the
-package project's `SetupContent\UDAPI` directory. Independent projects are built in parallel.
+The installer runs a separate `dotnet build` for each listed project so restore and compilation
+work from a clean checkout without `ProjectReference` entries. It then generates a metadata file
+named after each project (for example, `OrdersApi.udapi.json`) and copies the files to the package
+project's `SetupContent\UDAPI` directory before package creation.
 
 `UdapiProject` uses standard MSBuild item syntax, so projects can also be selected with wildcards:
 
@@ -86,9 +87,10 @@ package project's `SetupContent\UDAPI` directory. Independent projects are built
 </ItemGroup>
 ```
 
-All matched projects are built and must be UDAPI projects. Exclude the central package project if
-it is within the wildcard scope. The installer package validates that the selected projects import
-the toolkit targets and have matching script XML files before building them.
+All matched projects must be UDAPI projects. Exclude the central package project if it is within
+the wildcard scope. The installer checks for matching script XML files before building and verifies
+the toolkit imports afterward. Child builds use the package build's configuration and platform;
+configure package feeds through NuGet configuration so the child restores can use them.
 
 For the runtime API guides, see [controllers and routing](controllers-and-routing.md) and
 [configuration and responses](configuration-and-responses.md).
