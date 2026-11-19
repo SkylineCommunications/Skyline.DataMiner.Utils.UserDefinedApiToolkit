@@ -22,9 +22,10 @@ that should be built and included:
 </ItemGroup>
 ```
 
-The package builds the listed projects before the package project, generates their
-`<ProjectName>.udapi.json` files, and copies them to `SetupContent\UDAPI`. Independent UDAPI
-projects are built in parallel. A failed UDAPI project stops package generation.
+The installer runs `dotnet build` for each listed project, using the package build's configuration
+and platform. Each child build restores its own dependencies. The installer then generates the
+`<ProjectName>.udapi.json` files and copies them to `SetupContent\UDAPI` before package creation.
+A failed UDAPI project stops package generation.
 
 `UdapiProject` supports the standard MSBuild wildcard and exclusion syntax. For example, to
 include every project below an API directory while excluding a nested installer project:
@@ -40,9 +41,9 @@ Every matched project is built and must be a UDAPI project with the correspondin
 Keep the central package project outside the wildcard scope, or exclude it, to avoid including the
 package project in its own build.
 
-Before building any matched project, the package verifies that the toolkit targets are imported and
-that the matching script XML file exists. Invalid entries fail the package build with a descriptive
-error.
+The installer checks for matching script XML files before building and verifies that the projects
+import the toolkit targets after the child builds. Use a NuGet configuration visible to the child
+projects; other command-line MSBuild overrides on the package build aren't forwarded to `dotnet build`.
 
 ### About DataMiner
 

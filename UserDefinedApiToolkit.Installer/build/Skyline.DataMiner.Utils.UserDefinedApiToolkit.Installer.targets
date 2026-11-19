@@ -2,6 +2,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<_UserDefinedApiToolkitInstallerPackageOutputDirectory>$(MSBuildProjectDirectory)\SetupContent\UDAPI</_UserDefinedApiToolkitInstallerPackageOutputDirectory>
+		<_UserDefinedApiToolkitDotNetHost>$(DOTNET_HOST_PATH)</_UserDefinedApiToolkitDotNetHost>
+		<_UserDefinedApiToolkitDotNetHost Condition="'$(_UserDefinedApiToolkitDotNetHost)' == ''">dotnet</_UserDefinedApiToolkitDotNetHost>
 	</PropertyGroup>
 
 	<Target Name="SkylineUserDefinedApiToolkit_Installer_BuildAndCollectUdapiProjects"
@@ -14,6 +16,15 @@
 		<ItemGroup>
 			<_UserDefinedApiToolkitExpectedProjects Include="@(UdapiProject->'%(FullPath)')" />
 		</ItemGroup>
+
+		<Error
+			Condition="!Exists('%(UdapiProject.RootDir)%(UdapiProject.Directory)%(UdapiProject.Filename).xml')"
+			Text="UdapiProject '%(UdapiProject.Identity)' must have a matching Automation script XML file next to the project file." />
+
+		<!-- Let the CLI reevaluate each project after restoring its NuGet imports. -->
+		<Exec
+			Command="&quot;$(_UserDefinedApiToolkitDotNetHost)&quot; build &quot;%(UdapiProject.FullPath)&quot; --configuration &quot;$(Configuration)&quot; -p:Platform=&quot;$(Platform)&quot;"
+			WorkingDirectory="$(MSBuildProjectDirectory)" />
 
 		<MSBuild
 			Projects="@(UdapiProject)"
@@ -31,15 +42,6 @@
 		<Error
 			Condition="'@(_UserDefinedApiToolkitInvalidProjects)' != ''"
 			Text="The following UdapiProject entries do not reference the Skyline.DataMiner.Utils.UserDefinedApiToolkit package: @(_UserDefinedApiToolkitInvalidProjects, ', ')." />
-
-		<Error
-			Condition="!Exists('%(UdapiProject.RootDir)%(UdapiProject.Directory)%(UdapiProject.Filename).xml')"
-			Text="UdapiProject '%(UdapiProject.Identity)' must have a matching Automation script XML file next to the project file." />
-
-		<MSBuild
-			Projects="@(UdapiProject)"
-			Targets="Build"
-			BuildInParallel="true" />
 
 		<MSBuild
 			Projects="@(UdapiProject)"

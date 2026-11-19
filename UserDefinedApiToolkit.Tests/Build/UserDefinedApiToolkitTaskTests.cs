@@ -197,6 +197,7 @@ namespace UserDefinedApiToolkit.Tests.Build
 			Directory.CreateDirectory(packageBuildDirectory);
 			Directory.CreateDirectory(childDirectory);
 			File.Copy(installerTargetSource, Path.Combine(packageBuildDirectory, Path.GetFileName(installerTargetSource)));
+			File.WriteAllText(Path.ChangeExtension(childProjectPath, ".xml"), "<DMSScript><Name>Child API</Name></DMSScript>");
 
 			File.WriteAllText(childProjectPath, @"<Project ToolsVersion=""Current"">
 	<Target Name=""Build"" />
@@ -282,7 +283,7 @@ namespace UserDefinedApiToolkit.Tests.Build
 
 		private static string RunMsBuild(string projectPath, out int exitCode)
 		{
-			var process = Process.Start(new ProcessStartInfo
+			var startInfo = new ProcessStartInfo
 			{
 				FileName = "dotnet",
 				Arguments = $"msbuild \"{projectPath}\" /t:Build /nologo /v:minimal",
@@ -290,7 +291,10 @@ namespace UserDefinedApiToolkit.Tests.Build
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
 				CreateNoWindow = true,
-			});
+			};
+			// Nested dotnet builds must also release task assemblies before test cleanup.
+			startInfo.EnvironmentVariables["MSBUILDDISABLENODEREUSE"] = "1";
+			using var process = Process.Start(startInfo);
 			process.Should().NotBeNull();
 
 			var output = process!.StandardOutput.ReadToEnd() + Environment.NewLine + process.StandardError.ReadToEnd();

@@ -1,5 +1,10 @@
 {
-  "msbuild-sdks": {
-    "Skyline.DataMiner.Sdk": "2.7.1"
-  }
+	"sdk": {
+		"version": "10.0.100",
+		"rollForward": "latestFeature"
+	},
+	"msbuild-sdks": {
+		"Skyline.DataMiner.Sdk": "2.7.1",
+		"Skyline.DataMiner.Sdk.Intelligence": "2.7.1"
+	}
 }
